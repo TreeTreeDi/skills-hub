@@ -50,13 +50,21 @@ describe("extractZip", () => {
     expect(files.has("top-level/nested/file.txt")).toBe(false);
   });
 
-  it("handles files without parent directory", () => {
+  it("rejects zip with no top-level directory", () => {
     const zip = new AdmZip();
     zip.addFile("standalone.txt", Buffer.from("data"));
     const buffer = zip.toBuffer();
 
-    const files = extractZip(buffer);
-    expect(files.has("standalone.txt")).toBe(true);
+    expect(() => extractZip(buffer)).toThrow("exactly one top-level directory");
+  });
+
+  it("rejects zip with multiple top-level directories", () => {
+    const buffer = createZip({
+      "dir-a/file.txt": "a",
+      "dir-b/file.txt": "b",
+    });
+
+    expect(() => extractZip(buffer)).toThrow("exactly one top-level directory");
   });
 });
 
