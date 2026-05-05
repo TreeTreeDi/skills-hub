@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+@theme {
+  /* Colors — Brand & Accent */
+  --color-primary: #17171c;
+  --color-cohere-black: #000000;
+  --color-ink: #212121;
+  --color-deep-green: #003c33;
+  --color-dark-navy: #071829;
+  --color-canvas: #ffffff;
+  --color-soft-stone: #eeece7;
+  --color-pale-green: #edfce9;
+  --color-pale-blue: #f1f5ff;
+  --color-hairline: #d9d9dd;
+  --color-border-light: #e5e7eb;
+  --color-card-border: #f2f2f2;
+  --color-muted: #93939f;
+  --color-slate: #75758a;
+  --color-body-muted: #616161;
+  --color-action-blue: #1863dc;
+  --color-focus-blue: #4c6ee6;
+  --color-coral: #ff7759;
+  --color-coral-soft: #ffad9b;
+  --color-form-focus: #9b60aa;
+  --color-on-primary: #ffffff;
+  --color-on-dark: #ffffff;
+  --color-error: #b30000;
+
+  /* Typography */
+  --font-display: "CohereText", "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Unica77 Cohere Web", "Inter", "Arial", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "CohereMono", "Arial", ui-sans-serif, system-ui, sans-serif;
+
+  /* Radius */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 30px;
+  --radius-pill: 32px;
+  --radius-full: 9999px;
+
+  /* Spacing */
+  --spacing-xxs: 2px;
+  --spacing-xs: 6px;
+  --spacing-section: 80px;
+}
+
+/* Base styles */
+html {
+  font-family: var(--font-body);
+  color: var(--color-ink);
+  background-color: var(--color-canvas);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
