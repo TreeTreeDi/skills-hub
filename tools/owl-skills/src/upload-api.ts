@@ -38,9 +38,9 @@ export async function uploadToHub(
   const zipPath = await createZip(dirPath);
   const zipBuffer = await readFile(zipPath);
 
-  const apiUrl = options.apiUrl ?? "https://skills-hub.vercel.app/api/upload";
+  const apiUrl = options.apiUrl ?? "https://skills-hub-website.vercel.app/api/upload";
   const formData = new FormData();
-  formData.append("file", new Blob([zipBuffer]), "package.zip");
+  formData.append("file", new File([zipBuffer], "package.zip"), "package.zip");
   formData.append("packageName", validation.packageName);
   if (options.uploaderName) formData.append("uploaderName", options.uploaderName);
   if (options.uploaderEmail) formData.append("uploaderEmail", options.uploaderEmail);
