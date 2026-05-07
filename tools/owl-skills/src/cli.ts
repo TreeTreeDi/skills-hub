@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { spawnSync } from "child_process";
+import { spawnSync, execSync } from "child_process";
 import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } from "fs";
 import { basename, join, dirname } from "path";
 import { homedir } from "os";
@@ -847,6 +847,15 @@ async function runUpdate(args: string[] = []): Promise<void> {
 // Upload Command
 // ============================================
 
+function getGitConfig(): { name: string; email: string } | null {
+  try {
+    const name = execSync("git config user.name", { encoding: "utf-8" }).trim();
+    const email = execSync("git config user.email", { encoding: "utf-8" }).trim();
+    if (name && email) return { name, email };
+  } catch {}
+  return null;
+}
+
 async function runUpload(args: string[]): Promise<void> {
   const dirPath = args[0] || process.cwd();
   const spinner = p.spinner();
@@ -873,10 +882,15 @@ async function runUpload(args: string[]): Promise<void> {
     process.exit(0);
   }
 
+  const gitConfig = getGitConfig();
+
   const uploadSpinner = p.spinner();
   uploadSpinner.start("Uploading to hub...");
 
-  const result = await uploadToHub(dirPath);
+  const result = await uploadToHub(dirPath, {
+    uploaderName: gitConfig?.name,
+    uploaderEmail: gitConfig?.email,
+  });
 
   if (result.success) {
     uploadSpinner.stop("Upload complete!");
