@@ -79,7 +79,7 @@ export function createOctokitClient(): GitHubClient {
     throw new Error("GITHUB_TOKEN environment variable is required");
   }
   const owner = process.env.GITHUB_OWNER || "TreeTreeDi";
-  const repo = process.env.GITHUB_REPO || "skills-hub";
+  const repo = process.env.GITHUB_REPO || "skills-data";
   const octokit = new Octokit({ auth: token });
   return new OctokitGitHubClient(octokit, owner, repo);
 }

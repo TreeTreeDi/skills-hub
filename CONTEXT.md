@@ -17,12 +17,12 @@ _Avoid_: bundle, collection, group
 _Avoid_: skill file, config file
 
 **Upload（上传）**：
-用户通过 CLI 将本地技能包提交到平台的过程。CLI 打包后发送到 API，API 代理创建 GitHub PR。
+用户通过 `owl upload` 将本地技能包提交到平台的过程。CLI 打包后发送到 API，API 代理创建 GitHub PR。
 _Avoid_: publish, submit, push
 
-**owl-skills（os）**：
-CLI 工具名称，用于上传、安装和管理技能。基于 vercel-labs/skills fork 改造。
-_Avoid_: cli, tool
+**owl-skills（owl）**：
+CLI 工具名称，用于上传、安装和管理技能。基于 vercel-labs/skills fork 改造，bin name 为 `owl`。
+_Avoid_: cli, tool, os
 
 **Hub**：
 Web 端，技能的发现和展示界面。Next.js 应用，部署在 Vercel。
@@ -45,7 +45,7 @@ _Avoid_: origin, repo
 > **Dev:** "用户上传一个包，里面有两个技能，PR 应该怎么组织？"
 > **Domain expert:** "一个 PR 对应一个 Package。PR 的 files 变更里会包含 `skills/<package-name>/skill-a/SKILL.md` 和 `skills/<package-name>/skill-b/SKILL.md`。"
 
-> **Dev:** "用户执行 `os add mattpocock/skills`，这是安装一个包还是一个技能？"
+> **Dev:** "用户执行 `owl add mattpocock/skills`，这是安装一个包还是一个技能？"
 > **Domain expert:** "这取决于仓库结构。如果 mattpocock/skills 下面是多个技能目录，就是安装一个包（用户可以勾选要装哪些）。如果只有一个 SKILL.md，就是安装单个技能，跳过选择步骤。"
 
 ## Flagged ambiguities

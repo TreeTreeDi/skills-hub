@@ -21,17 +21,17 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 5. 作为技能使用者，我想在详情页看到 SKILL.md 的完整渲染内容，以便理解技能的指令
 6. 作为技能使用者，我想在详情页看到技能的文件列表，以便了解技能包含哪些资源
 7. 作为技能使用者，我想一键复制安装命令，以便快速安装技能到本地
-8. 作为技能使用者，我想通过 `os add <source>` 安装技能，以便自动完成发现-选择-安装流程
+8. 作为技能使用者，我想通过 `owl add <source>` 安装技能，以便自动完成发现-选择-安装流程
 9. 作为技能使用者，我想在安装时选择要装到哪个 agent（Claude Code、Cursor 等），以便适配我的开发环境
 10. 作为技能使用者，我想安装单个技能而非整个包，以便只装我需要的部分
 11. 作为技能使用者，我想查看已安装的技能列表，以便管理本地技能
-12. 作为技能贡献者，我想通过 `os upload ./my-package` 上传技能包，以便分享给其他人
+12. 作为技能贡献者，我想通过 `owl upload ./my-package` 上传技能包，以便分享给其他人
 13. 作为技能贡献者，我想 CLI 自动读取我的 git 名字和邮箱，以便上传时无需额外输入身份信息
 14. 作为技能贡献者，我想 CLI 自动验证 SKILL.md 格式，以便上传前发现格式问题
 15. 作为技能贡献者，我想上传后获得 PR 链接，以便跟踪审核进度
-16. 作为技能贡献者，我想在上传时指定包名和分类，以便在 Hub 中正确展示
+16. 作为技能贡献者，我想上传时包名从文件夹名自动推断，以便减少输入（分类和标签暂不做）
 17. 作为技能贡献者，我想通过文件夹路径上传，以便直接分享本地开发中的技能
-18. 作为技能贡献者，我想通过 ZIP 文件上传，以便分享打包好的技能包
+18. ~~作为技能贡献者，我想通过 ZIP 文件上传~~（暂不做，只支持文件夹路径）
 19. 作为平台维护者，我想所有上传通过 PR 审核，以便控制技能质量
 20. 作为平台维护者，我想 PR 描述中包含上传者信息，以便追溯来源
 21. 作为平台维护者，我想 PR 合并后 Hub 自动更新，以便无需手动操作
@@ -39,8 +39,8 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 23. 作为平台访客，我想 Hub 在移动端也能正常使用，以便在手机上浏览技能
 24. 作为技能使用者，我想在详情页看到同包下的其他技能推荐，以便发现相关技能
 25. 作为技能使用者，我想看到每个技能的文件数量和大小，以便评估技能的复杂度
-26. 作为 CLI 用户，我想 `os add` 支持 GitHub shorthand（`owner/repo`），以便快速安装
-27. 作为 CLI 用户，我想 `os add` 支持完整 URL 和本地路径，以便灵活指定来源
+26. 作为 CLI 用户，我想 `owl add` 支持 GitHub shorthand（`owner/repo`），以便快速安装
+27. 作为 CLI 用户，我想 `owl add` 支持本地路径，以便开发测试时灵活指定来源（完整 URL 暂不做）
 28. 作为 CLI 用户，我想安装时看到交互式选择界面（类似 fzf），以便直观地选择技能和 agent
 
 ## Implementation Decisions
@@ -50,7 +50,7 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 - Monorepo 结构：`apps/website`（Next.js）+ `tools/`（CLI fork 独立仓库）+ `packages/utils`
 - 技能数据存储在 GitHub 仓库的 `skills/` 目录下，每个子目录为一个 Package
 - Web 端通过 GitHub API 在构建时读取技能数据，Vercel 自动部署
-- CLI 独立仓库，基于 vercel-labs/skills fork 改造
+- CLI 独立仓库（owl-skills），基于 vercel-labs/skills fork 改造，bin name: `owl`
 
 ### Web 端模块
 
@@ -59,12 +59,30 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 - **API Route（/api/upload）**：接收 ZIP + 元数据 → 解压验证 → 创建 GitHub 分支 → 推送文件 → 创建 PR
 - **Design System**：Cohere 设计系统通过 Tailwind CSS theme 实现（颜色、字体、圆角、间距 tokens）
 
-### CLI 模块
+### CLI 模块（owl-skills，bin name: `owl`）
 
-- **upload 命令**：验证本地技能目录 → 读取 git 身份 → 打包 ZIP → POST 到 Hub API → 返回 PR URL
-- **add 命令**（fork 自 vercel-labs/skills）：解析来源 → clone/discover → 交互式选择 → 安装到 agent 目录
-- **list 命令**：列出已安装技能
-- **find 命令**：搜索 Hub 上的技能
+基于 vercel-labs/skills fork 改造（ADR-0007）。
+
+**保留的命令：**
+
+- **add 命令**：`owl add <package>` → 解析包名 → clone 仓库 → discover → 交互式选择 → 安装到 agent 目录
+- **remove 命令**：移除已安装技能
+- **list 命令**：`owl list` 列出已安装技能
+- **find 命令**：`owl find` 搜索可用技能
+- **update 命令**：更新已安装技能
+- **init 命令**：初始化新技能目录
+
+**新增的命令：**
+
+- **upload 命令**：`owl upload ./my-skills` → 自动推断包名 → 验证 SKILL.md → 打包 ZIP → POST 到 Hub API → 返回 PR URL（ADR-0008）
+
+**Source Parser 简化（ADR-0007）：**
+
+- 只保留三种解析类型：hub-name（包名）、github-shorthand（owner/repo）、local（本地路径）
+- `owl add demo` → 读取 `~/.owl-skills/config.json` 的 `defaultRepo` → 拼接为 `defaultRepo/skills/demo` → clone → install
+- 删除：GitLab 支持、well-known URL、source aliases、fragment ref、telemetry
+
+**配置文件：** `~/.owl-skills/config.json`，存 `defaultRepo` 字段（默认值硬编码，用户可覆盖）
 
 ### API 契约
 
@@ -86,6 +104,13 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 - API：Next.js Route Handlers + @octokit/rest + adm-zip
 - 部署：Vercel（Web）+ npm（CLI）
 - 工具链：pnpm workspace + Vite+（utils build/lint）
+
+## 实现顺序
+
+1. **创建 GitHub 技能数据仓库** — 建立仓库结构，放入示例包（单技能包 + 多技能包），验证 SKILL.md 格式
+2. **Fork CLI（owl-skills）** — Fork vercel-labs/skills，改包名/bin name，简化 source-parser，配置默认仓库
+3. **CLI upload 命令** — 实现 upload 流程：目录验证 → SKILL.md 格式校验 → ZIP 打包 → 调 Hub API
+4. **Hub 网站** — Next.js SSG 首页（包列表）+ 详情页（SKILL.md 渲染）+ /api/upload Route Handler
 
 ## Testing Decisions
 

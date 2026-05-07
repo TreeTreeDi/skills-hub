@@ -1,0 +1,68 @@
+{
+  "name": "owl-skills",
+  "version": "0.1.0",
+  "description": "CLI for Skills Hub — discover, install, and upload AI agent skills",
+  "bin": {
+    "owl": "./bin/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "bin"
+  ],
+  "type": "module",
+  "exports": {
+    "./add": "./dist/add.mjs",
+    "./agents": "./dist/agents.mjs",
+    "./blob": "./dist/blob.mjs",
+    "./cli": "./dist/cli.mjs",
+    "./config": "./dist/config.mjs",
+    "./constants": "./dist/constants.mjs",
+    "./find": "./dist/find.mjs",
+    "./frontmatter": "./dist/frontmatter.mjs",
+    "./git": "./dist/git.mjs",
+    "./install": "./dist/install.mjs",
+    "./installer": "./dist/installer.mjs",
+    "./list": "./dist/list.mjs",
+    "./local-lock": "./dist/local-lock.mjs",
+    "./plugin-manifest": "./dist/plugin-manifest.mjs",
+    "./prompts/search-multiselect": "./dist/prompts/search-multiselect.mjs",
+    "./providers": "./dist/providers/index.mjs",
+    "./providers/registry": "./dist/providers/registry.mjs",
+    "./providers/types": "./dist/providers/types.mjs",
+    "./providers/wellknown": "./dist/providers/wellknown.mjs",
+    "./remove": "./dist/remove.mjs",
+    "./sanitize": "./dist/sanitize.mjs",
+    "./skill-lock": "./dist/skill-lock.mjs",
+    "./skills": "./dist/skills.mjs",
+    "./source-parser": "./dist/source-parser.mjs",
+    "./sync": "./dist/sync.mjs",
+    "./telemetry": "./dist/telemetry.mjs",
+    "./types": "./dist/types.mjs",
+    "./update-source": "./dist/update-source.mjs",
+    "./upload": "./dist/upload.mjs",
+    "./upload-api": "./dist/upload-api.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "dev": "vp pack --watch",
+    "test": "vp test",
+    "check": "vp check"
+  },
+  "dependencies": {
+    "@clack/prompts": "catalog:",
+    "picocolors": "catalog:",
+    "simple-git": "catalog:",
+    "utils": "workspace:*",
+    "xdg-basedir": "catalog:",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.5.0",
+    "typescript": "^6.0.2",
+    "vite-plus": "^0.1.14"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
