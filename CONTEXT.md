@@ -21,7 +21,7 @@ _Avoid_: skill file, config file
 _Avoid_: publish, submit, push
 
 **owl-skills（owl）**：
-CLI 工具名称，用于上传、安装和管理技能。基于 vercel-labs/skills fork 改造，bin name 为 `owl`。
+CLI 工具名称，用于上传、安装和管理技能。基于 vercel-labs/skills 完整 fork，保留全部原版能力（38 种 agent、交互式 UI、search-multiselect、blob 安装、well-known providers、lock 文件、telemetry 等），bin name 为 `owl`。增量添加 upload 命令和 hub-name 解析。
 _Avoid_: cli, tool, os
 
 **Hub**：
@@ -38,7 +38,7 @@ _Avoid_: origin, repo
 - 一个 **Skill** 包含一个 `SKILL.md` 和零或多个附属文件
 - **Upload** 将一个 **Package** 从本地提交到 GitHub 仓库（通过 PR）
 - **Hub** 从 GitHub 仓库读取 **Package** 数据并展示
-- **owl-skills** CLI 可以执行 **Upload**（上传）和 **Add**（安装）操作
+- **owl-skills** CLI 可以执行 **Upload**（上传）、**Add**（安装）、**Remove**（移除）、**List**（列表）、**Find**（搜索）、**Update**（更新）、**Init**（初始化）、**Sync**（同步）等操作
 
 ## Example dialogue
 

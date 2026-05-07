@@ -63,24 +63,25 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 
 基于 vercel-labs/skills fork 改造（ADR-0007）。
 
-**保留的命令：**
+**保留的原版命令（全部来自 vercel-labs/skills fork）：**
 
-- **add 命令**：`owl add <package>` → 解析包名 → clone 仓库 → discover → 交互式选择 → 安装到 agent 目录
-- **remove 命令**：移除已安装技能
-- **list 命令**：`owl list` 列出已安装技能
-- **find 命令**：`owl find` 搜索可用技能
-- **update 命令**：更新已安装技能
-- **init 命令**：初始化新技能目录
+- **add 命令**：`owl add <package>` → 解析来源 → clone 仓库 → discover → 交互式选择 → 安装到 agent 目录
+- **remove 命令**：交互式移除已安装技能，支持按 agent 过滤
+- **list 命令**：`owl list` 列出已安装技能，支持 `--json` 和 `--global`
+- **find 命令**：`owl find [query]` 通过 skills.sh API 搜索可用技能
+- **update 命令**：检查并更新已安装技能到最新版本
+- **init 命令**：初始化新技能目录，生成 SKILL.md 模板
+- **sync 命令**：`owl experimental_sync` 从 node_modules 同步插件技能
+- **install 命令**：`owl experimental_install` 从 skills-lock.json 恢复安装
 
 **新增的命令：**
 
-- **upload 命令**：`owl upload ./my-skills` → 自动推断包名 → 验证 SKILL.md → 打包 ZIP → POST 到 Hub API → 返回 PR URL（ADR-0008）
+- **upload 命令**：`owl upload [dir]` → 自动推断包名 → 验证 SKILL.md → 打包 ZIP → POST 到 Hub API → 返回 PR URL（ADR-0008）
 
-**Source Parser 简化（ADR-0007）：**
+**Source Parser（ADR-0007）：**
 
-- 只保留三种解析类型：hub-name（包名）、github-shorthand（owner/repo）、local（本地路径）
-- `owl add demo` → 读取 `~/.owl-skills/config.json` 的 `defaultRepo` → 拼接为 `defaultRepo/skills/demo` → clone → install
-- 删除：GitLab 支持、well-known URL、source aliases、fragment ref、telemetry
+- 原版全部解析类型保留：GitHub URL、GitLab URL、Git SSH、well-known URL、source aliases、fragment ref
+- 增量添加 hub-name 类型：`owl add hello` → 读取 `~/.owl-skills/config.json` 的 `defaultRepo` → 解析为 `defaultRepo/skills/hello` → clone → install
 
 **配置文件：** `~/.owl-skills/config.json`，存 `defaultRepo` 字段（默认值硬编码，用户可覆盖）
 
@@ -130,7 +131,7 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 ### 不需要测试的部分
 
 - Next.js 页面渲染（通过 E2E 或手动验证）
-- vercel-labs/skills fork 的已有逻辑（上游已有测试）
+- vercel-labs/skills fork 的核心安装逻辑（上游已有测试覆盖）
 - GitHub API 本身的正确性
 
 ## Out of Scope
@@ -140,11 +141,10 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 - 技能版本管理（后续迭代）
 - 多仓库支持（当前只支持单仓库）
 - Windows/Linux CLI 支持（当前只支持 macOS）
-- 技能自动同步/更新检测
 - 管理后台（审核通过 GitHub PR 界面完成）
 
 ## Further Notes
 
 - Cohere 设计系统的专有字体（CohereText、Unica77）需要使用文档中的 fallback 字体
-- vercel-labs/skills fork 的工作在独立仓库进行，不在此 monorepo 中
-- 技能数据仓库的结构需要在实现前创建好初始目录
+- owl-skills CLI 位于 monorepo 的 `tools/owl-skills` 目录下，使用 Vite+ 构建
+- 技能数据仓库 `TreeTreeDi/skills-data` 已创建，初始目录结构为 `skills/{package}/`
