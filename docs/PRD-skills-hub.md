@@ -31,17 +31,18 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 15. 作为技能贡献者，我想上传后获得 PR 链接，以便跟踪审核进度
 16. 作为技能贡献者，我想上传时包名从文件夹名自动推断，以便减少输入（分类和标签暂不做）
 17. 作为技能贡献者，我想通过文件夹路径上传，以便直接分享本地开发中的技能
-18. ~~作为技能贡献者，我想通过 ZIP 文件上传~~（暂不做，只支持文件夹路径）
-19. 作为平台维护者，我想所有上传通过 PR 审核，以便控制技能质量
-20. 作为平台维护者，我想 PR 描述中包含上传者信息，以便追溯来源
-21. 作为平台维护者，我想 PR 合并后 Hub 自动更新，以便无需手动操作
-22. 作为平台访客，我想 Hub 首页加载速度快，以便有良好的第一印象
-23. 作为平台访客，我想 Hub 在移动端也能正常使用，以便在手机上浏览技能
-24. 作为技能使用者，我想在详情页看到同包下的其他技能推荐，以便发现相关技能
-25. 作为技能使用者，我想看到每个技能的文件数量和大小，以便评估技能的复杂度
-26. 作为 CLI 用户，我想 `owl add` 支持 GitHub shorthand（`owner/repo`），以便快速安装
-27. 作为 CLI 用户，我想 `owl add` 支持本地路径，以便开发测试时灵活指定来源（完整 URL 暂不做）
-28. 作为 CLI 用户，我想安装时看到交互式选择界面（类似 fzf），以便直观地选择技能和 agent
+18. 作为技能贡献者，我想上传单个技能（根目录有 SKILL.md）或多技能 Kit（根目录无 SKILL.md，子目录各有 SKILL.md），以便灵活分享
+19. ~~作为技能贡献者，我想通过 ZIP 文件上传~~（暂不做，只支持文件夹路径）
+20. 作为平台维护者，我想所有上传通过 PR 审核，以便控制技能质量
+21. 作为平台维护者，我想 PR 描述中包含上传者信息，以便追溯来源
+22. 作为平台维护者，我想 PR 合并后 Hub 自动更新，以便无需手动操作
+23. 作为平台访客，我想 Hub 首页加载速度快，以便有良好的第一印象
+24. 作为平台访客，我想 Hub 在移动端也能正常使用，以便在手机上浏览技能
+25. 作为技能使用者，我想在详情页看到同包下的其他技能推荐，以便发现相关技能
+26. 作为技能使用者，我想看到每个技能的文件数量和大小，以便评估技能的复杂度
+27. 作为 CLI 用户，我想 `owl add` 支持 GitHub shorthand（`owner/repo`），以便快速安装
+28. 作为 CLI 用户，我想 `owl add` 支持本地路径，以便开发测试时灵活指定来源（完整 URL 暂不做）
+29. 作为 CLI 用户，我想安装时看到交互式选择界面（类似 fzf），以便直观地选择技能和 agent
 
 ## Implementation Decisions
 
@@ -76,7 +77,9 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 
 **新增的命令：**
 
-- **upload 命令**：`owl upload [dir]` → 自动推断包名 → 验证 SKILL.md → 打包 ZIP → POST 到 Hub API → 返回 PR URL（ADR-0008）
+- **upload 命令**：`owl upload [dir]` → 自动推断包名 → 验证包结构（单技能或 Kit 模式）→ 打包 ZIP → POST 到 Hub API → 返回 PR URL（ADR-0008）
+  - 单技能包：根目录包含 `SKILL.md`
+  - Kit（多技能包）：根目录无 `SKILL.md`，子目录（如 `skill-a/`、`skill-b/`）各含一个 `SKILL.md`
 
 **Source Parser（ADR-0007）：**
 
@@ -87,16 +90,17 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 
 ### API 契约
 
-- `POST /api/upload`：multipart/form-data，字段包括 `file`（ZIP）、`packageName`、`uploaderName`、`uploaderEmail`、`category`、`tags`
+- `POST /api/upload`：multipart/form-data，字段包括 `file`（ZIP）、`packageName`、`uploaderName`、`uploaderEmail`
+  - ~~`category`、`tags`~~ 暂不支持（后续迭代）
 - 响应：`{ prUrl: string, skills: Array<{ name, description }> }`
 - 错误：`{ error: string, details?: string }`
 
 ### GitHub 集成
 
-- 服务端使用 Octokit，持维护者 GitHub token
+- 服务端使用 Octokit，维护者 GitHub token 通过 `GITHUB_TOKEN` 环境变量注入（Vercel 部署时配置）
 - 上传创建分支 `upload/{packageName}-{timestamp}`，推送文件后创建 PR
 - PR 标题：`📦 New Package: {packageName}`
-- PR 描述包含：上传者信息、技能列表、分类、时间戳
+- PR 描述包含：上传者信息、技能列表、时间戳
 
 ### 技术栈
 

@@ -47,14 +47,11 @@ const DIM = "\x1b[38;5;102m"; // darker gray for secondary text
 const TEXT = "\x1b[38;5;145m"; // lighter gray for primary text
 
 const LOGO_LINES = [
-  "  ___  _   _ ___ ___  ",
-  " / _ \\| | | / __| __| ",
-  "| (_) | |_| \\__ \\ _|  ",
-  " \\___/ \\__,_|___/___| ",
-  "  _   _ _   _ ___ ___ ",
-  " | | | | | | / __| __|",
-  " | |_| | |_| \\__ \\ _| ",
-  "  \\__,_|\\__,_|___/___|",
+  "     ____ _____ ____ _____ _   _ _  ______",
+  "    / __ \\\_   _/ ___|_   _| | | | |/ / ___|",
+  "   / / \\`_ || | \\___ \\ | | | |_| | ' / |___",
+  "  / / (_| || |  ___) || | |  _  | . \\  __|",
+  " / / \\__,_||_| |____/ |_| |_| |_|_|\\_\\___|",
 ];
 
 // 256-color middle grays - visible on both light and dark backgrounds
@@ -172,10 +169,10 @@ ${BOLD}Options:${RESET}
 
 ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} owl add hello
-  ${DIM}$${RESET} owl add vercel-labs/agent-skills
-  ${DIM}$${RESET} owl add vercel-labs/agent-skills -g
-  ${DIM}$${RESET} owl add vercel-labs/agent-skills --agent claude-code cursor
-  ${DIM}$${RESET} owl add vercel-labs/agent-skills --skill pr-review commit
+  ${DIM}$${RESET} owl add hello
+  ${DIM}$${RESET} owl add hello -g
+  ${DIM}$${RESET} owl add hello --agent claude-code cursor
+  ${DIM}$${RESET} owl add hello --skill pr-review commit
   ${DIM}$${RESET} owl upload                        ${DIM}# upload skill from cwd${RESET}
   ${DIM}$${RESET} owl remove                        ${DIM}# interactive remove${RESET}
   ${DIM}$${RESET} owl remove web-design             ${DIM}# remove by name${RESET}
