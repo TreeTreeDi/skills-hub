@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, dirname, basename, resolve } from "node:path";
 import { validateUploadDir } from "./upload.ts";
 
 export interface UploadApiResult {
@@ -18,8 +18,11 @@ export interface UploadApiOptions {
 }
 
 export async function createZip(dirPath: string): Promise<string> {
+  const resolved = resolve(dirPath);
   const zipPath = join(tmpdir(), `owl-upload-${Date.now()}.zip`);
-  await execPromise("zip", ["-r", zipPath, "."], { cwd: dirPath });
+  const parentDir = dirname(resolved);
+  const dirName = basename(resolved);
+  await execPromise("zip", ["-r", zipPath, dirName], { cwd: parentDir });
   return zipPath;
 }
 

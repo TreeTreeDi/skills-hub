@@ -28,14 +28,12 @@ export async function validateUploadDir(dirPath: string): Promise<UploadValidati
   }
 
   const skillMdPath = join(dirPath, "SKILL.md");
-  if (!existsSync(skillMdPath)) {
-    return { valid: false, error: "Missing SKILL.md in directory root" };
-  }
-
-  const content = await readFile(skillMdPath, "utf-8");
-  const parsed = parseSkillMd(content);
-  if ("error" in parsed) {
-    return { valid: false, error: `Invalid SKILL.md: ${parsed.error}` };
+  if (existsSync(skillMdPath)) {
+    const content = await readFile(skillMdPath, "utf-8");
+    const parsed = parseSkillMd(content);
+    if ("error" in parsed) {
+      return { valid: false, error: `Invalid SKILL.md: ${parsed.error}` };
+    }
   }
 
   const skills = await discoverSkills(dirPath, undefined, { fullDepth: true });
