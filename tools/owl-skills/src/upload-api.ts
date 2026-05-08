@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname, basename, resolve } from "node:path";
 import { validateUploadDir } from "./upload.ts";
+import { apiConfig } from "./api-config.ts";
 
 export interface UploadApiResult {
   success: boolean;
@@ -12,7 +13,6 @@ export interface UploadApiResult {
 }
 
 export interface UploadApiOptions {
-  apiUrl?: string;
   uploaderName?: string;
   uploaderEmail?: string;
 }
@@ -38,7 +38,7 @@ export async function uploadToHub(
   const zipPath = await createZip(dirPath);
   const zipBuffer = await readFile(zipPath);
 
-  const apiUrl = options.apiUrl ?? "https://skills-hub-website.vercel.app/api/upload";
+  const apiUrl = apiConfig.uploadUrl;
   const formData = new FormData();
   formData.append("file", new File([zipBuffer], "package.zip"), "package.zip");
   formData.append("packageName", validation.packageName);

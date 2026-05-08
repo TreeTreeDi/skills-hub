@@ -12,6 +12,7 @@
 
 import { parseFrontmatter } from "./frontmatter.ts";
 import { sanitizeMetadata } from "./sanitize.ts";
+import { apiConfig } from "./api-config.ts";
 import type { Skill } from "./types.ts";
 
 // ─── Types ───
@@ -40,8 +41,6 @@ export interface BlobSkill extends Skill {
 }
 
 // ─── Constants ───
-
-const DOWNLOAD_BASE_URL = process.env.SKILLS_DOWNLOAD_URL || "https://skills.sh";
 
 /** Timeout for individual HTTP fetches (ms) */
 const FETCH_TIMEOUT = 10_000;
@@ -273,7 +272,7 @@ async function fetchSkillDownload(
 ): Promise<SkillDownloadResponse | null> {
   try {
     const [owner, repo] = source.split("/");
-    const url = `${DOWNLOAD_BASE_URL}/api/download/${encodeURIComponent(owner!)}/${encodeURIComponent(repo!)}/${encodeURIComponent(slug)}`;
+    const url = apiConfig.downloadUrl(owner!, repo!, slug);
     const response = await fetch(url, {
       signal: AbortSignal.timeout(FETCH_TIMEOUT),
     });
