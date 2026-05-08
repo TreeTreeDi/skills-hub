@@ -1,6 +1,6 @@
 {
   "name": "owl-skills",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "CLI for Skills Hub — discover, install, and upload AI agent skills",
   "bin": {
     "owl": "bin/cli.mjs"
