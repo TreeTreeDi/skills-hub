@@ -18,10 +18,18 @@ interface SkillCardProps {
   description: string;
   category?: string;
   stars?: number;
+  skillCount?: number;
   href: string;
 }
 
-export function SkillCard({ name, description, category, stars, href }: SkillCardProps) {
+export function SkillCard({
+  name,
+  description,
+  category,
+  stars,
+  skillCount,
+  href,
+}: SkillCardProps) {
   return (
     <a
       href={href}
@@ -36,11 +44,16 @@ export function SkillCard({ name, description, category, stars, href }: SkillCar
         )}
       </div>
       <p className="mt-2 font-body text-sm text-body-muted line-clamp-2">{description}</p>
-      {category && (
-        <span className="mt-3 inline-block font-mono text-xs uppercase tracking-wide text-coral">
-          {category}
-        </span>
-      )}
+      <div className="mt-3 flex items-center gap-3">
+        {category && (
+          <span className="inline-block font-mono text-xs uppercase tracking-wide text-coral">
+            {category}
+          </span>
+        )}
+        {skillCount && skillCount > 1 && (
+          <span className="font-mono text-xs text-muted">{skillCount} skills</span>
+        )}
+      </div>
     </a>
   );
 }

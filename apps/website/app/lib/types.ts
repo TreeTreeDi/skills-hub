@@ -20,6 +20,28 @@ export interface SkillDetail extends Skill {
   relatedSkills: Skill[];
 }
 
+export interface CatalogItem {
+  slug: string;
+  name: string;
+  description: string;
+  category: string;
+  tags: string[];
+  stars: number;
+  href: string;
+  packageName: string;
+  skillCount: number;
+  updatedAt: number;
+}
+
+export interface PackageDetail {
+  slug: string;
+  name: string;
+  description: string;
+  category: "集成包";
+  installCommand: string;
+  skills: Skill[];
+}
+
 export interface PackageInfo {
   name: string;
   skills: Skill[];
