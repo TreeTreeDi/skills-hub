@@ -92,6 +92,7 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 
 - `POST /api/upload`：multipart/form-data，字段包括 `file`（ZIP）、`packageName`、`uploaderName`、`uploaderEmail`
   - ~~`category`、`tags`~~ 暂不支持（后续迭代）
+  - 包名唯一性检查（后续迭代）：上传前通过 GitHub API 检查 `skills/{packageName}` 是否已存在，已存在则拒绝
 - 响应：`{ prUrl: string, skills: Array<{ name, description }> }`
 - 错误：`{ error: string, details?: string }`
 
