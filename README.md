@@ -2,60 +2,95 @@
 
 AI Agent 技能发现与安装平台
 
-## Development
+## 开发指南
 
-- Check everything is ready:
-
-```bash
-vp run ready
-```
-
-- Run the tests:
+### 环境检查
 
 ```bash
-vp run -r test
+vp run ready    # 检查一切就绪
+vp run -r test  # 运行全部测试
+vp run -r build # 构建整个 monorepo
 ```
 
-- Build the monorepo:
+### 启动开发服务
 
 ```bash
-vp run -r build
+vp run dev      # 启动 Next.js 开发服务器（默认 3000 端口）
 ```
 
-- Run the development server:
+## 环境变量
+
+CLI（`owl`）通过 `SKILLS_API_URL` 环境变量来配置 API 端点。
+
+| 变量             | 说明                      | 默认值              |
+| ---------------- | ------------------------- | ------------------- |
+| `SKILLS_API_URL` | Skills Hub API 的基础 URL | `https://skills.sh` |
+
+### 本地开发
+
+如果你需要 CLI 调用本地开发服务器，先设置环境变量：
 
 ```bash
-vp run dev
+# 方式 1：当前 session 生效
+export SKILLS_API_URL=http://localhost:3000
+
+# 方式 2：单次命令生效
+SKILLS_API_URL=http://localhost:3000 owl upload hello
 ```
 
-## Website Sync And Deploy
+## CLI 使用
 
-- The website prefers `skills/` in the current repo, otherwise reads the configured GitHub skills repo via `GITHUB_OWNER` and `GITHUB_REPO`, and only falls back to `.agents/skills` for local development.
-- GitHub Actions runs lint, type checks, tests, and build on every PR and on pushes to `main`.
-- After a successful push to `main`, Actions calls the Vercel deploy hook stored in `VERCEL_DEPLOY_HOOK_URL`.
+### 方式 1：通过 pnpm workspace（推荐，开发时用）
 
-## Required Secrets
+在项目根目录执行：
 
-- Website runtime needs:
-  `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`
-- GitHub Actions deployment needs:
-  `VERCEL_DEPLOY_HOOK_URL`
+```bash
+pnpm install
+pnpm --filter owl-skills build
+```
 
-### Local Website Env
+然后直接用：
 
-- Copy `apps/website/.env.example` to `apps/website/.env.local`
-- Fill in:
-  - `GITHUB_TOKEN`: a GitHub PAT with read access to the target skills repo
-  - `GITHUB_OWNER`: repo owner, default `TreeTreeDi`
-  - `GITHUB_REPO`: repo name, default `skills-data`
+```bash
+pnpm owl upload hello           # 上传技能包
+pnpm owl find typescript        # 搜索技能
+pnpm owl add hello              # 安装技能
+```
 
-### GitHub Actions Secret
+### 方式 2：全局 link（开发调试）
 
-- Add repo secret `VERCEL_DEPLOY_HOOK_URL`
+```bash
+cd tools/owl-skills
+pnpm link --global
+```
 
-### Vercel Project Env
+之后在任何目录都能使用 `owl` 命令。修改代码后重新 `pnpm --filter owl-skills build` 即可更新。
 
-- Add these environment variables to the website project:
-  - `GITHUB_TOKEN`
-  - `GITHUB_OWNER`
-  - `GITHUB_REPO`
+### 方式 3：全局安装（发布后使用）
+
+```bash
+npm install -g owl-skills
+# 或
+pnpm install -g owl-skills
+```
+
+安装后可直接使用：
+
+```bash
+owl upload hello
+owl find typescript
+owl add hello
+```
+
+## 常用命令
+
+```bash
+owl add <package>               # 安装技能
+owl upload [dir]                # 上传技能包到 Hub
+owl find [query]                # 搜索技能（交互式）
+owl list                        # 列出已安装技能
+owl remove [skills...]          # 移除技能
+owl update [skills...]          # 更新技能
+```
+
+了解更多：https://skills.sh

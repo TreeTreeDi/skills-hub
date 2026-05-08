@@ -68,6 +68,9 @@ describe("uploadToHub", () => {
     writeFileSync(join(testDir, "SKILL.md"), "---\nname: test\ndescription: test\n---\n");
 
     const originalFetch = globalThis.fetch;
+    const originalEnv = process.env.SKILLS_API_URL;
+    process.env.SKILLS_API_URL = "http://localhost";
+
     globalThis.fetch = async () =>
       new Response(
         JSON.stringify({
@@ -79,9 +82,10 @@ describe("uploadToHub", () => {
         },
       );
 
-    const result = await uploadToHub(testDir, { apiUrl: "http://localhost/api/upload" });
+    const result = await uploadToHub(testDir);
 
     globalThis.fetch = originalFetch;
+    process.env.SKILLS_API_URL = originalEnv;
 
     expect(result.success).toBe(false);
     expect(result.error).toContain("already exists");

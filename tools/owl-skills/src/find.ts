@@ -3,15 +3,13 @@ import { runAdd, parseAddOptions } from "./add.ts";
 import { sanitizeMetadata } from "./sanitize.ts";
 import { track } from "./telemetry.ts";
 import { isRepoPrivate } from "./source-parser.ts";
+import { apiConfig } from "./api-config.ts";
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
 const DIM = "\x1b[38;5;102m";
 const TEXT = "\x1b[38;5;145m";
 const CYAN = "\x1b[36m";
-
-// API endpoint for skills search
-const SEARCH_API_BASE = process.env.SKILLS_API_URL || "https://skills.sh";
 
 function formatInstalls(count: number): string {
   if (!count || count <= 0) return "";
@@ -30,7 +28,7 @@ export interface SearchSkill {
 // Search via API
 export async function searchSkillsAPI(query: string): Promise<SearchSkill[]> {
   try {
-    const url = `${SEARCH_API_BASE}/api/search?q=${encodeURIComponent(query)}&limit=10`;
+    const url = `${apiConfig.searchUrl}?q=${encodeURIComponent(query)}&limit=10`;
     const res = await fetch(url);
 
     if (!res.ok) return [];

@@ -124,9 +124,6 @@ ${BOLD}Manage Skills:${RESET}
   list, ls             List installed skills
   find [query]         Search for skills interactively
 
-${BOLD}Upload Options:${RESET}
-  --api-url <url>      Upload API endpoint (default: production)
-
 ${BOLD}Updates:${RESET}
   update [skills...]   Update skills to latest versions (alias: upgrade)
 
@@ -861,14 +858,10 @@ function getGitConfig(): { name: string; email: string } | null {
 
 async function runUpload(args: string[]): Promise<void> {
   let dirPath = process.cwd();
-  let apiUrl: string | undefined;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === "--api-url") {
-      apiUrl = args[i + 1];
-      i++;
-    } else if (!arg.startsWith("-")) {
+    if (!arg.startsWith("-")) {
       dirPath = arg;
     }
   }
@@ -903,7 +896,6 @@ async function runUpload(args: string[]): Promise<void> {
   uploadSpinner.start("Uploading to hub...");
 
   const result = await uploadToHub(dirPath, {
-    apiUrl,
     uploaderName: gitConfig?.name,
     uploaderEmail: gitConfig?.email,
   });
