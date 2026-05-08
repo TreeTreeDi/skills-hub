@@ -1,6 +1,7 @@
 "use client";
 
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useState } from "react";
 
 interface MarkdownContentProps {
@@ -123,6 +124,38 @@ const components = {
       {children}
     </strong>
   ),
+  table: ({ children, ...props }: React.HTMLAttributes<HTMLTableElement>) => (
+    <div className="overflow-x-auto mb-4">
+      <table className="w-full border-collapse border border-hairline text-left" {...props}>
+        {children}
+      </table>
+    </div>
+  ),
+  thead: ({ children, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <thead className="bg-soft-stone font-mono text-xs uppercase tracking-wide text-muted" {...props}>
+      {children}
+    </thead>
+  ),
+  tbody: ({ children, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) => (
+    <tbody className="font-body text-base text-ink" {...props}>
+      {children}
+    </tbody>
+  ),
+  tr: ({ children, ...props }: React.HTMLAttributes<HTMLTableRowElement>) => (
+    <tr className="border-b border-hairline last:border-b-0" {...props}>
+      {children}
+    </tr>
+  ),
+  th: ({ children, ...props }: React.HTMLAttributes<HTMLTableCellElement>) => (
+    <th className="px-4 py-2.5 border-b border-hairline font-medium text-ink" {...props}>
+      {children}
+    </th>
+  ),
+  td: ({ children, ...props }: React.HTMLAttributes<HTMLTableCellElement>) => (
+    <td className="px-4 py-2.5 border-r border-hairline last:border-r-0 text-ink" {...props}>
+      {children}
+    </td>
+  ),
 };
 
 function extractText(node: React.ReactNode): string {
@@ -138,7 +171,7 @@ function extractText(node: React.ReactNode): string {
 export function MarkdownContent({ content, className }: MarkdownContentProps) {
   return (
     <article className={className}>
-      <ReactMarkdown components={components}>{content}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{content}</ReactMarkdown>
     </article>
   );
 }
