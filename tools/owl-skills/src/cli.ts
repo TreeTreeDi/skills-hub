@@ -23,7 +23,7 @@ import {
   formatSourceInput,
 } from "./update-source.ts";
 import { validateUploadDir } from "./upload.ts";
-import { uploadToHub } from "./upload-api.ts";
+import { uploadToHub, checkPackageExists } from "./upload-api.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -881,8 +881,67 @@ async function runUpload(args: string[]): Promise<void> {
     `Found ${validation.skills.length} skill(s): ${validation.skills.map((s) => s.name).join(", ")}`,
   );
 
+  let packageName = validation.packageName;
+
+  // Pre-flight check: does the package already exist?
+  const checkSpinner = p.spinner();
+  checkSpinner.start("Checking package name availability...");
+  const check = await checkPackageExists(packageName);
+  if (check.error) {
+    checkSpinner.stop(`Availability check failed: ${check.error}`);
+    p.outro(pc.red("Upload aborted"));
+    return;
+  }
+  checkSpinner.stop("Availability check complete");
+
+  if (check.exists) {
+    console.log();
+    console.log(pc.yellow(`Package "${packageName}" already exists.`));
+
+    const action = await p.select({
+      message: "What would you like to do?",
+      options: [
+        { value: "rename", label: "Rename and create new" },
+        { value: "cancel", label: "Cancel" },
+      ],
+    });
+
+    if (p.isCancel(action) || action === "cancel") {
+      p.cancel("Upload cancelled");
+      process.exit(0);
+    }
+
+    const newName = await p.text({
+      message: "Enter a new package name:",
+      validate: (value) => {
+        if (!value || value.trim().length === 0) return "Package name is required";
+        if (value.trim().includes(" ")) return "Spaces are not allowed";
+      },
+    });
+
+    if (p.isCancel(newName)) {
+      p.cancel("Upload cancelled");
+      process.exit(0);
+    }
+
+    packageName = (newName as string).trim();
+
+    // Re-check availability of the new name
+    const recheck = await checkPackageExists(packageName);
+    if (recheck.error) {
+      console.log(pc.red(`Error checking new name: ${recheck.error}`));
+      p.outro(pc.red("Upload aborted"));
+      return;
+    }
+    if (recheck.exists) {
+      console.log(pc.red(`Package "${packageName}" also already exists.`));
+      p.outro(pc.red("Upload aborted"));
+      return;
+    }
+  }
+
   const confirmUpload = await p.confirm({
-    message: `Upload "${validation.packageName}" to the Skills Hub?`,
+    message: `Upload "${packageName}" to the Skills Hub?`,
   });
 
   if (p.isCancel(confirmUpload) || !confirmUpload) {
@@ -898,6 +957,7 @@ async function runUpload(args: string[]): Promise<void> {
   const result = await uploadToHub(dirPath, {
     uploaderName: gitConfig?.name,
     uploaderEmail: gitConfig?.email,
+    packageName,
   });
 
   if (result.success) {
