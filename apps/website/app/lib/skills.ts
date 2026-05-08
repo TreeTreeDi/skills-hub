@@ -26,6 +26,7 @@ const LANGUAGE_BY_EXTENSION: Record<string, string> = {
 
 interface SkillRecord extends Skill {
   skillMd: string;
+  skillMdBody: string;
   fileList: SkillDetail["fileList"];
   updatedAt: number;
 }
@@ -307,6 +308,7 @@ async function loadSkillsFromLegacyRoot(rootDir: string): Promise<SkillRecord[]>
           stars: 0,
           filePath: relative(process.cwd(), skillMdPath).replaceAll("\\", "/"),
           skillMd: content,
+          skillMdBody: parsed.body,
           fileList: toRelativeFileList(
             relative(process.cwd(), skillDir).replaceAll("\\", "/"),
             fileEntries,
@@ -351,6 +353,7 @@ async function buildSkillRecordsFromDescriptors(
           stars: 0,
           filePath: descriptor.skillMdPath,
           skillMd: content,
+          skillMdBody: parsed.body,
           fileList: toRelativeFileList(descriptor.skillDirPath, descriptor.fileEntries),
           updatedAt,
         } satisfies SkillRecord;
@@ -516,6 +519,7 @@ export async function getSkillBySlug(slug: string): Promise<SkillDetail | null> 
     stars: skill.stars,
     filePath: skill.filePath,
     skillMd: skill.skillMd,
+    skillMdBody: skill.skillMdBody,
     fileList: skill.fileList,
     installCommand: `owl add ${skill.packageName}`,
     relatedSkills,
