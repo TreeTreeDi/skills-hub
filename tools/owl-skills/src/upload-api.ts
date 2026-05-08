@@ -49,6 +49,16 @@ export async function uploadToHub(
     const response = await fetch(apiUrl, { method: "POST", body: formData });
     if (!response.ok) {
       const body = await response.text();
+      if (response.status === 409) {
+        try {
+          const parsed = JSON.parse(body) as { error?: string };
+          if (parsed.error) {
+            return { success: false, error: parsed.error };
+          }
+        } catch {
+          // fall through to generic error
+        }
+      }
       return { success: false, error: `API error (${response.status}): ${body}` };
     }
     const data = (await response.json()) as {

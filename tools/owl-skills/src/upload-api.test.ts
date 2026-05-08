@@ -63,6 +63,30 @@ describe("uploadToHub", () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain("No valid skills found");
   });
+
+  it("returns friendly error on 409 conflict", async () => {
+    writeFileSync(join(testDir, "SKILL.md"), "---\nname: test\ndescription: test\n---\n");
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () =>
+      new Response(
+        JSON.stringify({
+          error: 'Package "test" already exists. Please use the update feature instead.',
+        }),
+        {
+          status: 409,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+    const result = await uploadToHub(testDir, { apiUrl: "http://localhost/api/upload" });
+
+    globalThis.fetch = originalFetch;
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain("already exists");
+    expect(result.error).not.toContain("API error (409)");
+  });
 });
 
 function listZipEntries(zipPath: string): Promise<string[]> {

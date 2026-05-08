@@ -1,5 +1,6 @@
 import AdmZip from "adm-zip";
-import { validatePackageStructure, parseSkillMd } from "./skill-parser";
+import { parseSkillMd } from "utils";
+import { validatePackageStructure } from "./skill-parser";
 import { createUploadPR, type GitHubClient } from "./github";
 import { createOctokitClient } from "./github-octokit";
 
@@ -18,10 +19,10 @@ export interface UploadResult {
   skills: Array<{ name: string; description: string }>;
 }
 
-export interface UploadError {
-  error: string;
-  details?: string[];
-}
+export type UploadError =
+  | { type: "EXTRACTION_FAILED"; message: string }
+  | { type: "INVALID_STRUCTURE"; details: string[] }
+  | { type: "DUPLICATE_PACKAGE"; packageName: string };
 
 export function extractZip(buffer: Buffer): Map<string, Buffer> {
   const zip = new AdmZip(buffer);
@@ -77,11 +78,11 @@ export function collectSkills(
 
   for (const [path, buffer] of files) {
     if (!path.endsWith("SKILL.md")) continue;
-    const parsed = parseSkillMd(buffer.toString("utf-8"));
-    if (parsed) {
+    const result = parseSkillMd(buffer.toString("utf-8"));
+    if (!("error" in result)) {
       skills.push({
-        name: parsed.frontmatter.name,
-        description: parsed.frontmatter.description,
+        name: result.name,
+        description: result.description,
       });
     }
   }
@@ -89,25 +90,47 @@ export function collectSkills(
   return skills;
 }
 
-export async function processUpload(
-  input: UploadInput,
-  github?: GitHubClient,
-): Promise<UploadResult | UploadError> {
+export interface PreparedUpload {
+  files: Map<string, Buffer>;
+  skills: Array<{ name: string; description: string }>;
+}
+
+export function prepareUpload(buffer: Buffer): PreparedUpload | UploadError {
   let files: Map<string, Buffer>;
   try {
-    files = extractZip(input.fileBuffer);
+    files = extractZip(buffer);
   } catch (e) {
-    return { error: e instanceof Error ? e.message : "Failed to extract ZIP" };
+    return {
+      type: "EXTRACTION_FAILED",
+      message: e instanceof Error ? e.message : "Failed to extract ZIP",
+    };
   }
 
   const validation = validatePackageStructure(files);
   if (!validation.valid) {
-    return { error: "Invalid package structure", details: validation.errors };
+    return { type: "INVALID_STRUCTURE", details: validation.errors };
   }
 
   const skills = collectSkills(files);
+  return { files, skills };
+}
+
+export async function processUpload(
+  input: UploadInput,
+  github?: GitHubClient,
+): Promise<UploadResult | UploadError> {
+  const prepared = prepareUpload(input.fileBuffer);
+  if ("type" in prepared) return prepared;
 
   const client = github ?? createOctokitClient();
+
+  const { name: defaultBranch } = await client.getDefaultBranch();
+  const packagePath = `skills/${input.packageName}`;
+  const exists = await client.treeExists(packagePath, defaultBranch);
+  if (exists) {
+    return { type: "DUPLICATE_PACKAGE", packageName: input.packageName };
+  }
+
   const result = await createUploadPR(
     {
       packageName: input.packageName,
@@ -115,11 +138,11 @@ export async function processUpload(
       uploaderEmail: input.uploaderEmail,
       category: input.category,
       tags: input.tags,
-      files,
-      skills,
+      files: prepared.files,
+      skills: prepared.skills,
     },
     client,
   );
 
-  return { prUrl: result.prUrl, prNumber: result.prNumber, skills };
+  return { prUrl: result.prUrl, prNumber: result.prNumber, skills: prepared.skills };
 }

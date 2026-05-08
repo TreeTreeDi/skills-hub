@@ -19,6 +19,7 @@ export interface GitHubClient {
   createCommit(message: string, treeSha: string, parentSha: string): Promise<string>;
   updateRef(ref: string, sha: string): Promise<void>;
   createPullRequest(pr: PullRequestInput): Promise<{ url: string; number: number }>;
+  treeExists(path: string, branchName: string): Promise<boolean>;
 }
 
 export interface UploadPRInput {

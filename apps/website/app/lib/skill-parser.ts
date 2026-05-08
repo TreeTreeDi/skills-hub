@@ -1,55 +1,4 @@
-import { parse as parseYaml } from "yaml";
-
-export interface SkillFrontmatter {
-  name: string;
-  description: string;
-  version?: string;
-  tags?: string[];
-  allowedTools?: string[];
-}
-
-export interface ParsedSkill {
-  frontmatter: SkillFrontmatter;
-  body: string;
-  raw: string;
-}
-
-const FRONTMATTER_RE = /^---\r?\n([\s\S]*?)\r?\n---/;
-
-export function parseSkillMd(content: string): ParsedSkill | null {
-  const match = content.match(FRONTMATTER_RE);
-  if (!match) return null;
-
-  const yamlStr = match[1];
-  const body = content.slice(match[0].length).trim();
-  let frontmatter: Record<string, unknown>;
-
-  try {
-    frontmatter = parseYaml(yamlStr) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
-
-  if (typeof frontmatter.name !== "string" || typeof frontmatter.description !== "string") {
-    return null;
-  }
-
-  return {
-    frontmatter: {
-      name: frontmatter.name,
-      description: frontmatter.description,
-      version: typeof frontmatter.version === "string" ? frontmatter.version : undefined,
-      tags: Array.isArray(frontmatter.tags) ? frontmatter.tags.map(String) : undefined,
-      allowedTools: Array.isArray(frontmatter["allowed-tools"])
-        ? (frontmatter["allowed-tools"] as unknown[]).map(String)
-        : Array.isArray(frontmatter.allowedTools)
-          ? (frontmatter.allowedTools as unknown[]).map(String)
-          : undefined,
-    },
-    body,
-    raw: content,
-  };
-}
+import { parseSkillMd } from "utils";
 
 export function validatePackageStructure(files: Map<string, Buffer>): {
   valid: boolean;
@@ -70,9 +19,9 @@ export function validatePackageStructure(files: Map<string, Buffer>): {
 
       const content = files.get(path);
       if (content) {
-        const parsed = parseSkillMd(content.toString("utf-8"));
-        if (!parsed) {
-          errors.push(`${path}: invalid frontmatter (requires name and description)`);
+        const result = parseSkillMd(content.toString("utf-8"));
+        if ("error" in result) {
+          errors.push(`${path}: ${result.error}`);
         }
       }
     }

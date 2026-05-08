@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { extractZip, parseTags, collectSkills } from "./upload";
+import { describe, it, expect, vi } from "vitest";
+import { extractZip, parseTags, collectSkills, processUpload } from "./upload";
+import type { GitHubClient } from "./github";
 import AdmZip from "adm-zip";
 
 describe("parseTags", () => {
@@ -92,10 +93,84 @@ describe("collectSkills", () => {
     expect(skills).toHaveLength(1);
     expect(skills[0].name).toBe("good");
   });
+});
 
-  it("returns empty when no SKILL.md exists", () => {
-    const files = new Map<string, Buffer>([["README.md", Buffer.from("hello")]]);
+describe("processUpload", () => {
+  function createZip(files: Record<string, string>): Buffer {
+    const zip = new AdmZip();
+    for (const [path, content] of Object.entries(files)) {
+      zip.addFile(path, Buffer.from(content));
+    }
+    return zip.toBuffer();
+  }
 
-    expect(collectSkills(files)).toEqual([]);
+  function createMockClient(overrides: Record<string, unknown> = {}): GitHubClient {
+    return {
+      getDefaultBranch: vi.fn().mockResolvedValue({ sha: "abc123", name: "main" }),
+      createBranch: vi.fn().mockResolvedValue(undefined),
+      createTree: vi.fn().mockResolvedValue("tree-sha"),
+      createCommit: vi.fn().mockResolvedValue("commit-sha"),
+      updateRef: vi.fn().mockResolvedValue(undefined),
+      createPullRequest: vi.fn().mockResolvedValue({ url: "https://pr.url", number: 1 }),
+      treeExists: vi.fn().mockResolvedValue(false),
+      ...overrides,
+    } as GitHubClient;
+  }
+
+  it("returns 409 when package already exists", async () => {
+    const client = createMockClient({
+      treeExists: vi.fn().mockResolvedValue(true),
+    });
+
+    const zip = createZip({
+      "my-package/SKILL.md": "---\nname: test\ndescription: test skill\n---\n",
+    });
+
+    const result = await processUpload(
+      {
+        fileBuffer: zip,
+        packageName: "my-package",
+        uploaderName: "test",
+        uploaderEmail: "test@test.com",
+        category: "test",
+        tags: [],
+      },
+      client,
+    );
+
+    expect("type" in result).toBe(true);
+    expect(result).toEqual({
+      type: "DUPLICATE_PACKAGE",
+      packageName: "my-package",
+    });
+  });
+
+  it("proceeds to create PR when package does not exist", async () => {
+    const client = createMockClient({
+      treeExists: vi.fn().mockResolvedValue(false),
+    });
+
+    const zip = createZip({
+      "my-package/SKILL.md": "---\nname: test\ndescription: test skill\n---\n",
+    });
+
+    const result = await processUpload(
+      {
+        fileBuffer: zip,
+        packageName: "my-package",
+        uploaderName: "test",
+        uploaderEmail: "test@test.com",
+        category: "test",
+        tags: [],
+      },
+      client,
+    );
+
+    expect("type" in result).toBe(false);
+    expect(result).toEqual({
+      prUrl: "https://pr.url",
+      prNumber: 1,
+      skills: [{ name: "test", description: "test skill" }],
+    });
   });
 });

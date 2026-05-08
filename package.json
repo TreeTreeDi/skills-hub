@@ -7,6 +7,8 @@
     "ready": "vp check && vp run -r test && vp run -r build",
     "dev": "pnpm --filter website dev",
     "build": "pnpm --filter website build",
+    "test:website": "pnpm --filter website test",
+    "test:cli": "pnpm --filter owl-skills test",
     "prepare": "vp config"
   },
   "devDependencies": {

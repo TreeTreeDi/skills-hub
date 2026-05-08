@@ -71,6 +71,21 @@ class OctokitGitHubClient implements GitHubClient {
     });
     return { url: data.html_url, number: data.number };
   }
+
+  async treeExists(path: string, branchName: string): Promise<boolean> {
+    try {
+      await this.octokit.repos.getContent({
+        owner: this.owner,
+        repo: this.repo,
+        path,
+        ref: branchName,
+      });
+      return true;
+    } catch (err: any) {
+      if (err.status === 404) return false;
+      throw err;
+    }
+  }
 }
 
 export function createOctokitClient(): GitHubClient {

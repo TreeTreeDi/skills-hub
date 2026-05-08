@@ -33,8 +33,26 @@ export async function POST(request: NextRequest) {
       tags,
     });
 
-    if ("error" in result) {
-      return NextResponse.json(result, { status: 400 });
+    if ("type" in result) {
+      switch (result.type) {
+        case "DUPLICATE_PACKAGE": {
+          return NextResponse.json(
+            {
+              error: `Package "${result.packageName}" already exists. Please use the update feature instead.`,
+            },
+            { status: 409 },
+          );
+        }
+        case "INVALID_STRUCTURE": {
+          return NextResponse.json(
+            { error: "Invalid package structure", details: result.details },
+            { status: 400 },
+          );
+        }
+        case "EXTRACTION_FAILED": {
+          return NextResponse.json({ error: result.message }, { status: 400 });
+        }
+      }
     }
 
     return NextResponse.json(result);
