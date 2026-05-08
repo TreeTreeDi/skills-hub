@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vite-plus/test";
-import { uploadToHub, createZip } from "./upload-api.ts";
+import { uploadToHub, createZip, checkPackageExists } from "./upload-api.ts";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join, basename } from "node:path";
 import { tmpdir } from "node:os";
@@ -38,6 +38,48 @@ describe("createZip", () => {
       expect(entry).toMatch(new RegExp(`^${dirName}/`));
     }
     rmSync(zipPath);
+  });
+});
+
+describe("checkPackageExists", () => {
+  const originalFetch = globalThis.fetch;
+  const originalEnv = process.env.SKILLS_API_URL;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+    process.env.SKILLS_API_URL = originalEnv;
+  });
+
+  it("returns { exists: true } when package exists", async () => {
+    process.env.SKILLS_API_URL = "http://localhost";
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ exists: true, packageName: "frontend-kit" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+
+    const result = await checkPackageExists("frontend-kit");
+    expect(result.exists).toBe(true);
+  });
+
+  it("returns { exists: false } when package does not exist", async () => {
+    process.env.SKILLS_API_URL = "http://localhost";
+    globalThis.fetch = async () =>
+      new Response(JSON.stringify({ exists: false, packageName: "new-pkg" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+
+    const result = await checkPackageExists("new-pkg");
+    expect(result.exists).toBe(false);
+  });
+
+  it("returns error on non-ok response", async () => {
+    process.env.SKILLS_API_URL = "http://localhost";
+    globalThis.fetch = async () => new Response("Internal Server Error", { status: 500 });
+
+    const result = await checkPackageExists("broken");
+    expect(result.error).toContain("500");
   });
 });
 

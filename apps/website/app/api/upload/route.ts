@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         case "DUPLICATE_PACKAGE": {
           return NextResponse.json(
             {
-              error: `Package "${result.packageName}" already exists. Please use the update feature instead.`,
+              error: `Package "${result.packageName}" already exists. Use "owl upload" and choose Rename to publish under a different name.`,
             },
             { status: 409 },
           );
