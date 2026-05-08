@@ -1,0 +1,14 @@
+apps/website/.env.example
+  h_52cd6f22e5a1a0 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.1",
+  "base_commit_sha": "4052f4de63be6e691788b742919ab29ba409ad8d",
+  "prompts": {},
+  "humans": {
+    "h_52cd6f22e5a1a0": {
+      "author": "Bell <shiqiharbin@163.com>"
+    }
+  }
+}
