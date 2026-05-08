@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { Octokit } from "@octokit/rest";
 import { basename, extname, join, relative, resolve } from "node:path";
-import { parseSkillMd } from "./skill-parser";
+import { parseSkillMd } from "utils";
 import type { CatalogItem, PackageDetail, Skill, SkillDetail } from "./types";
 
 const REPO_SKILLS_ROOT = resolve(process.cwd(), "skills");
@@ -278,7 +278,7 @@ async function loadSkillsFromLegacyRoot(rootDir: string): Promise<SkillRecord[]>
   }
 
   const skills = await Promise.all(
-    skillDirs.map(async (skillDir) => {
+    skillDirs.map(async (skillDir): Promise<SkillRecord | null> => {
       const skillMdPath = join(skillDir, "SKILL.md");
 
       try {
@@ -291,18 +291,18 @@ async function loadSkillsFromLegacyRoot(rootDir: string): Promise<SkillRecord[]>
           ),
         ]);
         const parsed = parseSkillMd(content);
-        if (!parsed) {
+        if ("error" in parsed) {
           return null;
         }
 
         const packageName = basename(skillDir);
 
         return {
-          slug: toSlug(packageName, parsed.frontmatter.name),
-          name: parsed.frontmatter.name,
-          description: parsed.frontmatter.description,
+          slug: toSlug(packageName, parsed.name),
+          name: parsed.name,
+          description: parsed.description,
           category: "单技能",
-          tags: parsed.frontmatter.tags ?? [],
+          tags: [],
           packageName,
           stars: 0,
           filePath: relative(process.cwd(), skillMdPath).replaceAll("\\", "/"),
@@ -330,23 +330,23 @@ async function buildSkillRecordsFromDescriptors(
   },
 ): Promise<SkillRecord[]> {
   const skills = await Promise.all(
-    descriptors.map(async (descriptor) => {
+    descriptors.map(async (descriptor): Promise<SkillRecord | null> => {
       try {
         const [content, updatedAt] = await Promise.all([
           io.readTextFile(descriptor.skillMdPath),
           io.getUpdatedAt(descriptor.skillMdPath),
         ]);
         const parsed = parseSkillMd(content);
-        if (!parsed) {
+        if ("error" in parsed) {
           return null;
         }
 
         return {
-          slug: toSlug(descriptor.packageName, parsed.frontmatter.name),
-          name: parsed.frontmatter.name,
-          description: parsed.frontmatter.description,
+          slug: toSlug(descriptor.packageName, parsed.name),
+          name: parsed.name,
+          description: parsed.description,
           category: descriptor.category,
-          tags: parsed.frontmatter.tags ?? [],
+          tags: [],
           packageName: descriptor.packageName,
           stars: 0,
           filePath: descriptor.skillMdPath,
