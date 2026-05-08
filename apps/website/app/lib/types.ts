@@ -11,6 +11,7 @@ export interface Skill {
 
 export interface SkillDetail extends Skill {
   skillMd: string;
+  skillMdBody: string;
   fileList: Array<{
     path: string;
     language: string;

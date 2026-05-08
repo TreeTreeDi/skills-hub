@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@octokit/rest": "^21.1.1",
+    "@tailwindcss/typography": "^0.5.19",
     "adm-zip": "^0.5.16",
     "next": "^15.3.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-markdown": "^10.1.0",
     "utils": "workspace:*",
     "yaml": "^2.8.0"
   },
