@@ -1,4 +1,4 @@
-import { getSkills, getCategories } from "./lib/skills";
+import { getCatalogItems, getCategories } from "./lib/skills";
 import { SkillCard } from "./components/Card";
 import { Chip } from "./components/Chip";
 import { SearchBar } from "./components/SearchBar";
@@ -17,9 +17,9 @@ export default async function Home({ searchParams }: PageProps) {
   const category = params.category || "全部";
   const sort = (params.sort as "stars" | "recent") || "stars";
 
-  const [skills, categories] = await Promise.all([
-    getSkills({ keyword, category, sort }),
-    getCategories(),
+  const [items, categories] = await Promise.all([
+    getCatalogItems({ keyword, category, sort }),
+    Promise.resolve(getCategories()),
   ]);
 
   return (
@@ -68,16 +68,17 @@ export default async function Home({ searchParams }: PageProps) {
         </div>
 
         {/* Skill grid */}
-        {skills.length > 0 ? (
+        {items.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {skills.map((skill) => (
+            {items.map((item) => (
               <SkillCard
-                key={skill.slug}
-                name={skill.name}
-                description={skill.description}
-                category={skill.category}
-                stars={skill.stars}
-                href={`/skill/${skill.slug}`}
+                key={item.slug}
+                name={item.name}
+                description={item.description}
+                category={item.category}
+                stars={item.stars}
+                skillCount={item.skillCount}
+                href={item.href}
               />
             ))}
           </div>

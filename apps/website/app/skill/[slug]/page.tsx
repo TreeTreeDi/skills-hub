@@ -1,10 +1,17 @@
-import { getSkillBySlug } from "../../lib/skills";
+import { getSkillBySlug, getSkillSlugs } from "../../lib/skills";
 import { SkillCard } from "../../components/Card";
 import { CopyButton } from "../../components/CopyButton";
 import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+export const dynamicParams = false;
+
+export async function generateStaticParams() {
+  const slugs = await getSkillSlugs();
+  return slugs.map((slug) => ({ slug }));
 }
 
 export default async function SkillDetailPage({ params }: PageProps) {
@@ -15,13 +22,20 @@ export default async function SkillDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const backHref = skill.category === "集成包" ? `/package/${skill.packageName}` : "/";
+  const backLabel =
+    skill.category === "集成包" ? `← Back to ${skill.packageName}` : "← Back to skills";
+
   return (
     <main className="min-h-screen bg-canvas">
       <div className="mx-auto max-w-6xl px-6 py-section">
         {/* Header */}
         <div className="mb-10">
-          <a href="/" className="font-body text-sm text-muted hover:text-ink transition-colors">
-            ← Back to skills
+          <a
+            href={backHref}
+            className="font-body text-sm text-muted hover:text-ink transition-colors"
+          >
+            {backLabel}
           </a>
           <h1 className="mt-4 font-display text-[72px] font-normal leading-none tracking-[-1.44px] text-ink">
             {skill.name}
