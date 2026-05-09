@@ -381,7 +381,7 @@ async function loadSkillsFromDefaultRepo(client?: SkillsRepoClient): Promise<Ski
   });
 }
 
-async function getSkillRecords(client?: SkillsRepoClient): Promise<SkillRecord[]> {
+export async function getSkillRecords(client?: SkillsRepoClient): Promise<SkillRecord[]> {
   if (existsSync(REPO_SKILLS_ROOT)) {
     const localRepoSkills = await loadSkillsFromLocalPackages(REPO_SKILLS_ROOT);
     if (localRepoSkills.length > 0) {
