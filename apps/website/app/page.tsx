@@ -1,25 +1,13 @@
+import { Suspense } from "react";
 import { getCatalogItems, getCategories } from "./lib/skills";
-import { SkillCard } from "./components/Card";
-import { Chip } from "./components/Chip";
-import { SearchBar } from "./components/SearchBar";
+import { Catalog } from "./components/Catalog";
 
-interface PageProps {
-  searchParams: Promise<{
-    q?: string;
-    category?: string;
-    sort?: string;
-  }>;
-}
+export const revalidate = 3600;
 
-export default async function Home({ searchParams }: PageProps) {
-  const params = await searchParams;
-  const keyword = params.q || "";
-  const category = params.category || "全部";
-  const sort = (params.sort as "stars" | "recent") || "stars";
-
+export default async function Home() {
   const [items, categories] = await Promise.all([
-    getCatalogItems({ keyword, category, sort }),
-    Promise.resolve(getCategories()),
+    getCatalogItems(),
+    getCategories(),
   ]);
 
   return (
@@ -32,64 +20,32 @@ export default async function Home({ searchParams }: PageProps) {
         <p className="mt-6 font-body text-lg text-body-muted max-w-2xl">
           Discover and install skills for AI coding agents.
         </p>
-
-        {/* Search */}
-        <div className="mt-10 max-w-xl">
-          <SearchBar defaultValue={keyword} />
-        </div>
       </section>
 
       {/* Filters + Grid */}
       <section className="mx-auto max-w-6xl px-6 pb-section">
-        {/* Category chips */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {categories.map((cat) => (
-            <a key={cat} href={`/?category=${cat}&q=${keyword}&sort=${sort}`}>
-              <Chip label={cat} active={cat === category} />
-            </a>
-          ))}
-        </div>
-
-        {/* Sort */}
-        <div className="flex items-center gap-4 mb-6">
-          <span className="font-mono text-xs uppercase text-muted">Sort by</span>
-          <a
-            href={`/?category=${category}&q=${keyword}&sort=stars`}
-            className={`font-body text-sm ${sort === "stars" ? "text-ink font-medium" : "text-muted hover:text-ink"}`}
-          >
-            Stars
-          </a>
-          <a
-            href={`/?category=${category}&q=${keyword}&sort=recent`}
-            className={`font-body text-sm ${sort === "recent" ? "text-ink font-medium" : "text-muted hover:text-ink"}`}
-          >
-            Recent
-          </a>
-        </div>
-
-        {/* Skill grid */}
-        {items.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {items.map((item) => (
-              <SkillCard
-                key={item.slug}
-                name={item.name}
-                description={item.description}
-                category={item.category}
-                stars={item.stars}
-                skillCount={item.skillCount}
-                href={item.href}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="font-body text-lg text-muted">
-              No skills found{keyword ? ` for "${keyword}"` : ""}.
-            </p>
-          </div>
-        )}
+        <Suspense fallback={<CatalogSkeleton />}>
+          <Catalog items={items} categories={categories} />
+        </Suspense>
       </section>
     </main>
+  );
+}
+
+function CatalogSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="h-12 w-full max-w-xl border border-hairline rounded-sm" />
+      <div className="flex flex-wrap gap-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="h-9 w-20 border border-hairline rounded-sm" />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="h-32 border border-card-border rounded-sm" />
+        ))}
+      </div>
+    </div>
   );
 }
