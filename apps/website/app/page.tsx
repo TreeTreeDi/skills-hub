@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import { getCatalogItems, getCategories } from "./lib/skills";
 import { Catalog } from "./components/Catalog";
+import { AgentMarquee } from "./components/AgentMarquee";
+import { CommandBlock } from "./components/CommandBlock";
 
 export const revalidate = 3600;
 
@@ -20,6 +22,17 @@ export default async function Home() {
         <p className="mt-6 font-body text-lg text-body-muted max-w-2xl">
           Discover and install skills for AI coding agents.
         </p>
+
+        {/* Try it now + Agents */}
+        <div className="mt-10 flex flex-col lg:flex-row items-start lg:items-center gap-8 lg:gap-12">
+          <div className="flex flex-col gap-3">
+            <span className="font-mono text-xs uppercase tracking-wide text-muted">
+              Try it now
+            </span>
+            <CommandBlock />
+          </div>
+          <AgentMarquee />
+        </div>
       </section>
 
       {/* Filters + Grid */}
