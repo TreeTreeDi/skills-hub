@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from "vitest";
-import { extractZip, parseTags, collectSkills, processUpload, computeGitBlobSha, processAmend } from "./upload";
+import {
+  extractZip,
+  parseTags,
+  collectSkills,
+  processUpload,
+  computeGitBlobSha,
+  processAmend,
+} from "./upload";
 import type { GitHubClient } from "./github";
 import AdmZip from "adm-zip";
 
@@ -242,9 +249,7 @@ describe("processAmend", () => {
     const remoteSha = computeGitBlobSha(Buffer.from(skillContent));
 
     const client = createMockAmendClient({
-      getDirectoryTree: vi.fn().mockResolvedValue(
-        new Map([["SKILL.md", remoteSha]]),
-      ),
+      getDirectoryTree: vi.fn().mockResolvedValue(new Map([["SKILL.md", remoteSha]])),
     });
 
     const zip = createZip({
@@ -310,9 +315,16 @@ describe("processAmend", () => {
 
   it("creates PR with new files", async () => {
     const client = createMockAmendClient({
-      getDirectoryTree: vi.fn().mockResolvedValue(
-        new Map([["SKILL.md", computeGitBlobSha(Buffer.from("---\nname: test\ndescription: test skill\n---\n"))]]),
-      ),
+      getDirectoryTree: vi
+        .fn()
+        .mockResolvedValue(
+          new Map([
+            [
+              "SKILL.md",
+              computeGitBlobSha(Buffer.from("---\nname: test\ndescription: test skill\n---\n")),
+            ],
+          ]),
+        ),
     });
 
     const zip = createZip({

@@ -1,6 +1,7 @@
 import { getSkillBySlug, getSkillSlugs } from "../../lib/skills";
 import { SkillCard } from "../../components/Card";
 import { CopyButton } from "../../components/CopyButton";
+import { MarkdownContent } from "../../components/MarkdownContent";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -62,9 +63,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
             <h2 className="font-body text-sm font-medium uppercase tracking-wide text-muted mb-4">
               Documentation
             </h2>
-            <article className="prose prose-sm max-w-none font-body text-ink">
-              <pre className="whitespace-pre-wrap text-sm leading-relaxed">{skill.skillMd}</pre>
-            </article>
+            <MarkdownContent content={skill.skillMdBody} className="prose prose-sm max-w-none" />
           </div>
 
           {/* Sidebar */}

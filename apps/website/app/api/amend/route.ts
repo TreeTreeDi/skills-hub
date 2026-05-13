@@ -37,13 +37,18 @@ export async function POST(request: NextRequest) {
       switch (result.type) {
         case "PACKAGE_NOT_FOUND": {
           return NextResponse.json(
-            { error: `Package "${result.packageName}" does not exist. Use upload to create it first.` },
+            {
+              error: `Package "${result.packageName}" does not exist. Use upload to create it first.`,
+            },
             { status: 404 },
           );
         }
         case "NO_CHANGES": {
           return NextResponse.json(
-            { message: `No changes detected for package "${result.packageName}".`, noChanges: true },
+            {
+              message: `No changes detected for package "${result.packageName}".`,
+              noChanges: true,
+            },
             { status: 200 },
           );
         }

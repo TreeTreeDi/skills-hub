@@ -26,7 +26,7 @@ import {
   formatSourceInput,
 } from "./update-source.ts";
 import { validateUploadDir } from "./upload.ts";
-import { uploadToHub, amendToHub, type AmendApiResult } from "./upload-api.ts";
+import { uploadToHub, amendToHub, type AmendApiResult, checkPackageExists } from "./upload-api.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -927,8 +927,69 @@ async function runSubmit(args: string[], mode: SubmitMode): Promise<void> {
     `Found ${validation.skills.length} skill(s): ${validation.skills.map((s) => s.name).join(", ")}`,
   );
 
+  let packageName = validation.packageName;
+
+  // Pre-flight check only for upload mode
+  if (mode === "upload") {
+    const checkSpinner = p.spinner();
+    checkSpinner.start("Checking package name availability...");
+    const check = await checkPackageExists(packageName);
+    if (check.error) {
+      checkSpinner.stop(`Availability check failed: ${check.error}`);
+      p.outro(pc.red(config.abortLabel));
+      return;
+    }
+    checkSpinner.stop("Availability check complete");
+
+    if (check.exists) {
+      console.log();
+      console.log(pc.yellow(`Package "${packageName}" already exists.`));
+
+      const action = await p.select({
+        message: "What would you like to do?",
+        options: [
+          { value: "rename", label: "Rename and create new" },
+          { value: "cancel", label: "Cancel" },
+        ],
+      });
+
+      if (p.isCancel(action) || action === "cancel") {
+        p.cancel(config.cancelLabel);
+        process.exit(0);
+      }
+
+      const newName = await p.text({
+        message: "Enter a new package name:",
+        validate: (value) => {
+          if (!value || value.trim().length === 0) return "Package name is required";
+          if (value.trim().includes(" ")) return "Spaces are not allowed";
+        },
+      });
+
+      if (p.isCancel(newName)) {
+        p.cancel(config.cancelLabel);
+        process.exit(0);
+      }
+
+      packageName = (newName as string).trim();
+
+      // Re-check availability of the new name
+      const recheck = await checkPackageExists(packageName);
+      if (recheck.error) {
+        console.log(pc.red(`Error checking new name: ${recheck.error}`));
+        p.outro(pc.red(config.abortLabel));
+        return;
+      }
+      if (recheck.exists) {
+        console.log(pc.red(`Package "${packageName}" also already exists.`));
+        p.outro(pc.red(config.abortLabel));
+        return;
+      }
+    }
+  }
+
   const confirmSubmit = await p.confirm({
-    message: `${config.confirmLabel} "${validation.packageName}" on the Skills Hub?`,
+    message: `${config.confirmLabel} "${packageName}" on the Skills Hub?`,
   });
 
   if (p.isCancel(confirmSubmit) || !confirmSubmit) {
@@ -941,18 +1002,20 @@ async function runSubmit(args: string[], mode: SubmitMode): Promise<void> {
   const submitSpinner = p.spinner();
   submitSpinner.start(config.spinnerStart);
 
-  const result = mode === "amend"
-    ? await amendToHub(dirPath, {
-        uploaderName: gitConfig?.name,
-        uploaderEmail: gitConfig?.email,
-      })
-    : await uploadToHub(dirPath, {
-        uploaderName: gitConfig?.name,
-        uploaderEmail: gitConfig?.email,
-      });
+  const result =
+    mode === "amend"
+      ? await amendToHub(dirPath, {
+          uploaderName: gitConfig?.name,
+          uploaderEmail: gitConfig?.email,
+        })
+      : await uploadToHub(dirPath, {
+          uploaderName: gitConfig?.name,
+          uploaderEmail: gitConfig?.email,
+          packageName,
+        });
 
   if (result.success) {
-    const amendResult = mode === "amend" ? result as AmendApiResult : null;
+    const amendResult = mode === "amend" ? (result as AmendApiResult) : null;
     if (amendResult && amendResult.noChanges) {
       submitSpinner.stop("No changes detected");
       console.log();

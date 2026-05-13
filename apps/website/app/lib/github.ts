@@ -72,13 +72,15 @@ export async function createPackagePR(
 
   await github.updateRef(`heads/${branchName}`, commitSha);
 
-  const prTitle = options.mode === "amend"
-    ? `📦 Update package: ${options.packageName}`
-    : `📦 New Package: ${options.packageName}`;
+  const prTitle =
+    options.mode === "amend"
+      ? `📦 Update package: ${options.packageName}`
+      : `📦 New Package: ${options.packageName}`;
 
-  const prBody = options.mode === "amend"
-    ? buildAmendBody(options, skillsList)
-    : buildUploadBody(options, skillsList);
+  const prBody =
+    options.mode === "amend"
+      ? buildAmendBody(options, skillsList)
+      : buildUploadBody(options, skillsList);
 
   const pr = await github.createPullRequest({
     title: prTitle,
@@ -108,12 +110,14 @@ ${skillsList}
 }
 
 function buildAmendBody(options: PackagePRInput, skillsList: string): string {
-  const addedList = options.addedPaths && options.addedPaths.length > 0
-    ? `**Added (${options.addedPaths.length} file${options.addedPaths.length > 1 ? "s" : ""}):**\n${options.addedPaths.map((p) => `- \`${p}\``).join("\n")}`
-    : "";
-  const modifiedList = options.modifiedPaths && options.modifiedPaths.length > 0
-    ? `**Modified (${options.modifiedPaths.length} file${options.modifiedPaths.length > 1 ? "s" : ""}):**\n${options.modifiedPaths.map((p) => `- \`${p}\``).join("\n")}`
-    : "";
+  const addedList =
+    options.addedPaths && options.addedPaths.length > 0
+      ? `**Added (${options.addedPaths.length} file${options.addedPaths.length > 1 ? "s" : ""}):**\n${options.addedPaths.map((p) => `- \`${p}\``).join("\n")}`
+      : "";
+  const modifiedList =
+    options.modifiedPaths && options.modifiedPaths.length > 0
+      ? `**Modified (${options.modifiedPaths.length} file${options.modifiedPaths.length > 1 ? "s" : ""}):**\n${options.modifiedPaths.map((p) => `- \`${p}\``).join("\n")}`
+      : "";
 
   const changeSummary = [addedList, modifiedList].filter(Boolean).join("\n\n");
 
