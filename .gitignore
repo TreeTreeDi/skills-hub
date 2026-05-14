@@ -24,4 +24,7 @@ dist-ssr
 *.sw?
 
 # AI agent worktrees
-.claude/worktrees/
+.claude/
+.vercel
+.env
+.env*.local
