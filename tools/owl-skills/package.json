@@ -1,9 +1,9 @@
 {
-  "name": "owl-skills",
+  "name": "dt-skills",
   "version": "0.1.2",
   "description": "CLI for Skills Hub — discover, install, and upload AI agent skills",
   "bin": {
-    "owl": "bin/cli.mjs"
+    "dt-skills": "bin/cli.mjs"
   },
   "files": [
     "dist",

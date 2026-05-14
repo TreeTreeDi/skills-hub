@@ -10,11 +10,17 @@
     "test": "vitest run",
     "test:watch": "vitest"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.0.0",
     "@octokit/rest": "^21.1.1",
+    "@prisma/client": "^6.0.0",
     "@tailwindcss/typography": "^0.5.19",
     "adm-zip": "^0.5.16",
     "next": "^15.3.2",
+    "next-auth": "^5.0.0-beta.25",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-markdown": "^10.1.0",
@@ -28,7 +34,9 @@
     "@types/node": "^22.15.3",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
+    "prisma": "^6.0.0",
     "tailwindcss": "^4.1.5",
+    "tsx": "catalog:",
     "typescript": "~6.0.2",
     "vitest": "catalog:"
   }

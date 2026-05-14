@@ -41,7 +41,7 @@ export async function checkPackageExists(
 
 export async function createZip(dirPath: string): Promise<string> {
   const resolved = resolve(dirPath);
-  const zipPath = join(tmpdir(), `owl-upload-${Date.now()}.zip`);
+  const zipPath = join(tmpdir(), `dt-skills-upload-${Date.now()}.zip`);
   const parentDir = dirname(resolved);
   const dirName = basename(resolved);
   await execPromise("zip", ["-r", zipPath, dirName], { cwd: parentDir });

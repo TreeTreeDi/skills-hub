@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  githubId    String   @unique
+  githubLogin String   @unique
+  avatarUrl   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  uploads     Upload[]
+}
+
+enum UploadStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+}
+
+model Upload {
+  id            String       @id @default(cuid())
+  packageName   String
+  prNumber      Int?
+  prUrl         String?
+  status        UploadStatus @default(PENDING)
+  reviewComment String?
+  userId        String
+  user          User         @relation(fields: [userId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Package {
+  id               String         @id @default(cuid())
+  slug             String         @unique
+  name             String
+  sourceRepo       String
+  description      String?
+  ownerGithubLogin String?
+  skillsCount      Int            @default(0)
+  installs         Int            @default(0)
+  syncedAt         DateTime       @default(now())
+  skills           Skill[]
+  installEvents    InstallEvent[]
+}
+
+model Skill {
+  id           String         @id @default(cuid())
+  packageId    String
+  package      Package        @relation(fields: [packageId], references: [id])
+  slug         String         @unique
+  name         String
+  description  String?
+  tags         String[]
+  category     String
+  fileList     Json?
+  skillMdBody  String?
+  searchVector Unsupported("tsvector")?
+  installs     Int            @default(0)
+  syncedAt     DateTime       @default(now())
+  installEvents InstallEvent[]
+
+  @@index([searchVector], type: Gin)
+  @@index([packageId])
+  @@index([category])
+  @@index([installs])
+}
+
+model InstallEvent {
+  id        String   @id @default(cuid())
+  skillId   String?
+  skill     Skill?   @relation(fields: [skillId], references: [id])
+  packageId String?
+  package   Package? @relation(fields: [packageId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([skillId, createdAt])
+  @@index([packageId, createdAt])
+}

@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 
 const mockProcessUpload = vi.fn();
+const mockAuth = vi.fn().mockResolvedValue(null);
+const mockPrismaUploadCreate = vi.fn().mockResolvedValue(null);
 
 vi.mock("../../lib/upload", () => ({
   parseTags: vi.fn().mockImplementation((raw: string) => {
@@ -14,6 +16,18 @@ vi.mock("../../lib/upload", () => ({
     }
   }),
   processUpload: (...args: unknown[]) => mockProcessUpload(...args),
+}));
+
+vi.mock("../../../auth", () => ({
+  auth: (...args: unknown[]) => mockAuth(...args),
+}));
+
+vi.mock("../../lib/prisma", () => ({
+  prisma: {
+    upload: {
+      create: (...args: unknown[]) => mockPrismaUploadCreate(...args),
+    },
+  },
 }));
 
 describe("POST /api/upload", () => {
