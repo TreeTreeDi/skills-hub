@@ -271,7 +271,7 @@
 
 ### 数据库选型
 
-- **使用 Vercel Postgres**：与现有 Vercel 部署同平台，集成简单。Hobby 版 256MB 存储对当前数据量（技能数 <1000）完全够用，未来可通过升级 plan 扩展。
+- **使用 Neon Postgres**：Serverless Postgres，与 Vercel 部署配合良好，支持连接池（pgbouncer）和分支。Free 版 500MB 存储对当前数据量（技能数 <1000）完全够用，未来可通过升级 plan 扩展。
 
 ### 迁移路径
 
