@@ -13,7 +13,7 @@ owl-skills 的 source-parser 基于 vercel-labs/skills 原版完整保留，未�
 
 **hub-name 解析逻辑：**
 
-输入 `owl add hello` → `parseSource("hello")` 识别为 `{ type: 'hub-name', name: 'hello' }` → `resolveHubName("hello")` 读取 `~/.owl-skills/config.json` 中的 `defaultRepo` → 返回 `{ type: 'github', url: 'https://github.com/{defaultRepo}.git', subpath: 'skills/hello' }` → 后续流程与 GitHub shorthand 完全一致。
+输入 `owl add hello` → `parseSource("hello")` 识别为 `{ type: 'hub-name', name: 'hello' }` → `resolveHubName("hello")` 读取 `~/.dt-skills/config.json` 中的 `defaultRepo` → 返回 `{ type: 'github', url: 'https://github.com/{defaultRepo}.git', subpath: 'skills/hello' }` → 后续流程与 GitHub shorthand 完全一致。
 
 **hub-name 的识别规则：**
 
@@ -36,6 +36,6 @@ owl-skills 的 source-parser 基于 vercel-labs/skills 原版完整保留，未�
 
 - 包名：`skills` → `owl-skills`
 - Bin name：`skills` → `owl`
-- 新增配置文件：`~/.owl-skills/config.json`，存 `defaultRepo` 字段
+- 新增配置文件：`~/.dt-skills/config.json`，存 `defaultRepo` 字段
 - 新增命令：`owl upload`
 - 品牌：ASCII logo 从 SKILLS 改为 OWL

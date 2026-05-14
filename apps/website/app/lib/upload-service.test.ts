@@ -25,7 +25,7 @@ describe("UploadService", () => {
     const prisma = createMockPrisma();
     const processUpload = createMockProcessUpload();
     const service = new UploadService(
-      prisma as unknown as Parameters<typeof UploadService.prototype.constructor>[0],
+      prisma as unknown as ConstructorParameters<typeof UploadService>[0],
       processUpload,
     );
 
@@ -64,7 +64,7 @@ describe("UploadService", () => {
     const prisma = createMockPrisma();
     const processUpload = createMockProcessUpload();
     const service = new UploadService(
-      prisma as unknown as Parameters<typeof UploadService.prototype.constructor>[0],
+      prisma as unknown as ConstructorParameters<typeof UploadService>[0],
       processUpload,
     );
 
@@ -93,7 +93,7 @@ describe("UploadService", () => {
     const prisma = createMockPrisma();
     const processUpload = createMockProcessUpload();
     const service = new UploadService(
-      prisma as unknown as Parameters<typeof UploadService.prototype.constructor>[0],
+      prisma as unknown as ConstructorParameters<typeof UploadService>[0],
       processUpload,
     );
 

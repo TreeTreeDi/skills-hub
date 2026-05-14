@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "hello": {
+      "source": "TreeTreeDi/skills-data",
+      "sourceType": "github",
+      "computedHash": "8403512e83693bf7696e6b5ffe3ac0055b40cec24a882c936e059d634cb90f71"
+    }
+  }
+}

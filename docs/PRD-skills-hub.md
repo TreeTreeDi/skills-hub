@@ -84,9 +84,9 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
 **Source Parser（ADR-0007）：**
 
 - 原版全部解析类型保留：GitHub URL、GitLab URL、Git SSH、well-known URL、source aliases、fragment ref
-- 增量添加 hub-name 类型：`owl add hello` → 读取 `~/.owl-skills/config.json` 的 `defaultRepo` → 解析为 `defaultRepo/skills/hello` → clone → install
+- 增量添加 hub-name 类型：`owl add hello` → 读取 `~/.dt-skills/config.json` 的 `defaultRepo` → 解析为 `defaultRepo/skills/hello` → clone → install
 
-**配置文件：** `~/.owl-skills/config.json`，存 `defaultRepo` 字段（默认值硬编码，用户可覆盖）
+**配置文件：** `~/.dt-skills/config.json`，存 `defaultRepo` 字段（默认值硬编码，用户可覆盖）
 
 ### API 契约
 
@@ -95,6 +95,7 @@ AI agent 的技能（skills）分散在各个 GitHub 仓库中，没有统一的
   - 包名唯一性检查（后续迭代）：上传前通过 GitHub API 检查 `skills/{packageName}` 是否已存在，已存在则拒绝
 - 响应：`{ prUrl: string, skills: Array<{ name, description }> }`
 - 错误：`{ error: string, details?: string }`
+- `POST /api/track-install`：CLI 安装成功后 fire-and-forget 上报，body 为 `{ packageName: string, skillName?: string }`
 
 ### GitHub 集成
 

@@ -25,7 +25,7 @@ const LANGUAGE_BY_EXTENSION: Record<string, string> = {
   ".yml": "yaml",
 };
 
-interface SkillRecord extends Skill {
+export interface SkillRecord extends Skill {
   skillMd: string;
   skillMdBody: string;
   fileList: SkillDetail["fileList"];
@@ -541,8 +541,11 @@ export async function getSkillBySlug(slug: string): Promise<SkillDetail | null> 
 }
 
 export async function getPackageBySlug(slug: string): Promise<PackageDetail | null> {
-  const skills = await getSkillRecords();
-  const pkg = groupPackages(skills).find((entry) => entry.slug === slug);
+  const pkg = await prisma.package.findUnique({
+    where: { slug },
+    include: { skills: true },
+  });
+
   if (!pkg) {
     return null;
   }
@@ -550,18 +553,18 @@ export async function getPackageBySlug(slug: string): Promise<PackageDetail | nu
   return {
     slug: pkg.slug,
     name: pkg.name,
-    description: pkg.description,
+    description: pkg.description ?? "",
     category: "集成包",
-    installCommand: `npx dt-skills add ${pkg.packageName}`,
+    installCommand: `npx dt-skills add ${pkg.name}`,
     skills: pkg.skills.map((skill) => ({
       slug: skill.slug,
       name: skill.name,
-      description: skill.description,
+      description: skill.description ?? "",
       category: skill.category,
       tags: skill.tags,
-      packageName: skill.packageName,
-      stars: skill.stars,
-      filePath: skill.filePath,
+      packageName: pkg.name,
+      stars: 0,
+      filePath: "",
     })),
   };
 }
@@ -574,8 +577,10 @@ export async function getSkillSlugs(): Promise<string[]> {
 }
 
 export async function getPackageSlugs(): Promise<string[]> {
-  const skills = await getSkillRecords();
-  return groupPackages(skills).map((pkg) => pkg.slug);
+  const packages = await prisma.package.findMany({
+    select: { slug: true },
+  });
+  return packages.map((pkg) => pkg.slug);
 }
 
 export async function validateSkillSource(rootDir = REPO_SKILLS_ROOT): Promise<{
