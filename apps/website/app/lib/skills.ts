@@ -521,7 +521,7 @@ export async function getSkillBySlug(slug: string): Promise<SkillDetail | null> 
     skillMd: skill.skillMd,
     skillMdBody: skill.skillMdBody,
     fileList: skill.fileList,
-    installCommand: `owl add ${skill.packageName}`,
+    installCommand: `npx dt-skills add ${skill.packageName}`,
     relatedSkills,
   };
 }
@@ -538,7 +538,7 @@ export async function getPackageBySlug(slug: string): Promise<PackageDetail | nu
     name: pkg.name,
     description: pkg.description,
     category: "集成包",
-    installCommand: `owl add ${pkg.packageName}`,
+    installCommand: `npx dt-skills add ${pkg.packageName}`,
     skills: pkg.skills.map((skill) => ({
       slug: skill.slug,
       name: skill.name,

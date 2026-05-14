@@ -134,7 +134,7 @@ export function Catalog() {
     if (selected.size === 0) return;
     const commands = items
       .filter((item) => selected.has(item.id))
-      .map((item) => `dt-skills add ${item.name}`);
+      .map((item) => `npx dt-skills add ${item.name}`);
     const text = commands.join("\n");
     await navigator.clipboard.writeText(text);
     alert(`已复制 ${selected.size} 条安装命令`);
