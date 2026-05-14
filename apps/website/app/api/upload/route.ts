@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "../../../auth";
+import { prisma } from "../../lib/prisma";
+import { UploadService } from "../../lib/upload-service";
 import { parseTags, processUpload } from "../../lib/upload";
 
 export async function POST(request: NextRequest) {
@@ -24,14 +27,19 @@ export async function POST(request: NextRequest) {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    const result = await processUpload({
-      fileBuffer,
-      packageName,
-      uploaderName,
-      uploaderEmail,
-      category,
-      tags,
-    });
+    const session = await auth();
+    const uploadService = new UploadService(prisma, processUpload);
+    const result = await uploadService.upload(
+      {
+        fileBuffer,
+        packageName,
+        uploaderName,
+        uploaderEmail,
+        category,
+        tags,
+      },
+      session?.user?.id,
+    );
 
     if ("type" in result) {
       switch (result.type) {
