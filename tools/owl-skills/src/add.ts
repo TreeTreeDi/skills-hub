@@ -737,11 +737,11 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
     console.log();
     console.log(pc.dim("  Usage:"));
     console.log(
-      `    ${pc.cyan("npx dt-skills add")} ${pc.yellow("<source>")} ${pc.dim("[options]")}`,
+      `    ${pc.cyan("npx dt-skill add")} ${pc.yellow("<source>")} ${pc.dim("[options]")}`,
     );
     console.log();
     console.log(pc.dim("  Example:"));
-    console.log(`    ${pc.cyan("npx dt-skills add")} ${pc.yellow("hello")}`);
+    console.log(`    ${pc.cyan("npx dt-skill add")} ${pc.yellow("hello")}`);
     console.log();
     process.exit(1);
   }
@@ -791,7 +791,7 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
       p.log.message(pc.yellow("Skills run with full agent permissions and could be malicious."));
       console.log();
       p.log.message(
-        `If you understand the risks, re-run with:\n\n  ${pc.cyan(`npx dt-skills add ${source} --dangerously-accept-openclaw-risks`)}\n`,
+        `If you understand the risks, re-run with:\n\n  ${pc.cyan(`npx dt-skill add ${source} --dangerously-accept-openclaw-risks`)}\n`,
       );
       p.outro(pc.red("Installation blocked"));
       process.exit(1);

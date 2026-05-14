@@ -170,6 +170,7 @@ export function trackHubInstall(packageName: string, skillName?: string): void {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ packageName, ...(skillName && { skillName }) }),
+      signal: AbortSignal.timeout(5000),
     }).catch(() => {});
   } catch {
     // Silently ignore - tracking must never break installation

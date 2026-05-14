@@ -7,7 +7,7 @@
  */
 
 // TODO； 这里可以处理
-const DEFAULT_BASE_URL = "https://skills.sh";
+const DEFAULT_BASE_URL = "https://skills-hub-website.vercel.app";
 const DEFAULT_UPLOAD_BASE = "https://skills-hub-website.vercel.app";
 
 /** Resolve the effective base URL from env / CLI override */

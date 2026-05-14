@@ -4,7 +4,7 @@ import { apiConfig } from "./api-config.ts";
 describe("apiConfig", () => {
   describe("trackInstallUrl", () => {
     it("returns the track-install endpoint URL", () => {
-      expect(apiConfig.trackInstallUrl).toBe("https://skills.sh/api/track-install");
+      expect(apiConfig.trackInstallUrl).toBe("https://skills-hub-website.vercel.app/api/track-install");
     });
   });
 });

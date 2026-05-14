@@ -102,7 +102,7 @@ export interface RemoteSkill {
   metadata?: Record<string, unknown>;
 }
 
-/** Configuration for dt-skills CLI, stored at ~/.dt-skills/config.json */
+/** Configuration for dt-skill CLI, stored at ~/.dt-skill/config.json */
 export interface OwlConfig {
   defaultRepo: string;
 }

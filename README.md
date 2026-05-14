@@ -24,7 +24,7 @@ CLI（`owl`）通过 `SKILLS_API_URL` 环境变量来配置 API 端点。
 
 | 变量             | 说明                      | 默认值              |
 | ---------------- | ------------------------- | ------------------- |
-| `SKILLS_API_URL` | Skills Hub API 的基础 URL | `https://skills.sh` |
+| `SKILLS_API_URL` | Skills Hub API 的基础 URL | `https://skills-hub-website.vercel.app` |
 
 ### 本地开发
 

@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG: OwlConfig = {
 };
 
 export function getConfigPath(): string {
-  return join(homedir(), ".dt-skills", "config.json");
+  return join(homedir(), ".dt-skill", "config.json");
 }
 
 export function readConfig(configPath?: string): OwlConfig {
