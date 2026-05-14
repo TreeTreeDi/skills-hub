@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-interface SkillItem {
+interface PackageItem {
   id: string;
   slug: string;
   name: string;
   description: string | null;
-  packageName: string;
+  skillsCount: number;
   installs: number;
-  category: string;
+  skillSlug: string | null;
 }
 
 interface PaginationInfo {
@@ -39,7 +39,7 @@ export function Catalog() {
   const [page, setPage] = useState(
     parseInt(searchParams.get("page") || "1", 10) || 1
   );
-  const [items, setItems] = useState<SkillItem[]>([]);
+  const [items, setItems] = useState<PackageItem[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo | null>(null);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -53,10 +53,11 @@ export function Catalog() {
         params.set("tab", t);
         params.set("page", String(p));
         params.set("limit", "20");
+        params.set("target", "packages");
 
         const res = await fetch(`/api/search?${params.toString()}`);
         const data = await res.json();
-        setItems(data.skills || []);
+        setItems(data.packages || []);
         setPagination(data.pagination || null);
       } catch {
         setItems([]);
@@ -88,7 +89,7 @@ export function Catalog() {
     [searchParams, router]
   );
 
-  function handleSearchSubmit(e: React.FormEvent) {
+  function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPage(1);
     updateUrl({ q: keyword || undefined, page: undefined });
@@ -133,7 +134,7 @@ export function Catalog() {
     if (selected.size === 0) return;
     const commands = items
       .filter((item) => selected.has(item.id))
-      .map((item) => `dt-skills add ${item.packageName}`);
+      .map((item) => `dt-skills add ${item.name}`);
     const text = commands.join("\n");
     await navigator.clipboard.writeText(text);
     alert(`已复制 ${selected.size} 条安装命令`);
@@ -142,12 +143,19 @@ export function Catalog() {
   const allSelected = items.length > 0 && selected.size === items.length;
   const someSelected = selected.size > 0;
 
+  function getItemHref(item: PackageItem): string {
+    if (item.skillsCount === 1 && item.skillSlug) {
+      return `/skill/${item.skillSlug}`;
+    }
+    return `/package/${item.slug}`;
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="space-y-4">
         <p className="font-mono text-[11px] uppercase tracking-[0.1em] text-slate">
-          技能排行榜
+          技能包排行榜
         </p>
 
         <div className="flex flex-wrap items-center gap-4">
@@ -163,7 +171,7 @@ export function Catalog() {
               type="text"
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="搜索技能..."
+              placeholder="搜索技能包..."
               className="w-full pl-9 pr-4 py-2.5 border border-hairline rounded-xl bg-canvas font-body text-sm text-ink placeholder:text-slate outline-none focus:ring-1 focus:ring-ring-warm transition-shadow"
             />
           </form>
@@ -224,7 +232,10 @@ export function Catalog() {
                 排名
               </th>
               <th className="py-3 px-4 text-left font-mono text-[10px] uppercase tracking-[0.1em] text-slate font-normal">
-                技能
+                技能包
+              </th>
+              <th className="w-24 py-3 px-4 text-right font-mono text-[10px] uppercase tracking-[0.1em] text-slate font-normal">
+                技能数
               </th>
               <th className="py-3 px-4 text-right font-mono text-[10px] uppercase tracking-[0.1em] text-slate font-normal">
                 安装量
@@ -234,14 +245,14 @@ export function Catalog() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate">
+                <td colSpan={5} className="py-12 text-center text-slate">
                   加载中...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate">
-                  {keyword ? `未找到 "${keyword}" 相关技能` : "暂无技能数据"}
+                <td colSpan={5} className="py-12 text-center text-slate">
+                  {keyword ? `未找到 "${keyword}" 相关技能包` : "暂无技能包数据"}
                 </td>
               </tr>
             ) : (
@@ -251,7 +262,7 @@ export function Catalog() {
                   <tr
                     key={item.id}
                     className="border-b border-hairline last:border-b-0 cursor-pointer hover:bg-canvas transition-colors"
-                    onClick={() => (window.location.href = `/skill/${item.slug}`)}
+                    onClick={() => (window.location.href = getItemHref(item))}
                   >
                     <td className="py-3.5 px-2 pl-4" onClick={(e) => e.stopPropagation()}>
                       <input
@@ -267,15 +278,25 @@ export function Catalog() {
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-medium text-ink">{item.name}</span>
-                        {item.category === "集成包" && (
+                        {item.skillsCount > 1 && (
                           <span className="font-mono text-[10px] font-medium text-olive bg-warm-sand px-1.5 py-0.5 rounded">
-                            技能包
+                            集成包
+                          </span>
+                        )}
+                        {item.skillsCount === 1 && (
+                          <span className="font-mono text-[10px] font-medium text-olive bg-warm-sand px-1.5 py-0.5 rounded">
+                            单技能
                           </span>
                         )}
                       </div>
-                      <div className="font-mono text-xs text-slate mt-0.5">
-                        {item.packageName}
+                      <div className="font-mono text-xs text-slate mt-0.5 line-clamp-1">
+                        {item.description || "暂无描述"}
                       </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <span className="font-mono text-[13px] text-olive">
+                        {item.skillsCount}
+                      </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <span className="font-mono text-[13px] text-olive">
