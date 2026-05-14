@@ -5,9 +5,9 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 describe("getConfigPath", () => {
-  it("returns path ending with .owl-skills/config.json", () => {
+  it("returns path ending with .dt-skills/config.json", () => {
     const path = getConfigPath();
-    expect(path).toContain(".owl-skills");
+    expect(path).toContain(".dt-skills");
     expect(path).toContain("config.json");
   });
 });

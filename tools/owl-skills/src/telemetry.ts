@@ -1,3 +1,5 @@
+import { apiConfig } from "./api-config.ts";
+
 const TELEMETRY_URL = "https://add-skill.vercel.sh/t";
 const AUDIT_URL = "https://add-skill.vercel.sh/audit";
 
@@ -155,5 +157,21 @@ export function track(data: TelemetryData): void {
     fetch(`${TELEMETRY_URL}?${params.toString()}`).catch(() => {});
   } catch {
     // Silently fail - telemetry should never break the CLI
+  }
+}
+
+/**
+ * Report an install event to the Hub.
+ * Fire-and-forget: never blocks, never throws.
+ */
+export function trackHubInstall(packageName: string, skillName?: string): void {
+  try {
+    fetch(apiConfig.trackInstallUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ packageName, ...(skillName && { skillName }) }),
+    }).catch(() => {});
+  } catch {
+    // Silently ignore - tracking must never break installation
   }
 }

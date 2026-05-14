@@ -44,6 +44,10 @@ export const apiConfig = {
     return `${resolveBaseUrl()}/api/search`;
   },
 
+  get trackInstallUrl() {
+    return `${resolveBaseUrl()}/api/track-install`;
+  },
+
   downloadUrl(owner: string, repo: string, slug: string) {
     return `${resolveBaseUrl()}/api/download/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/${encodeURIComponent(slug)}`;
   },
