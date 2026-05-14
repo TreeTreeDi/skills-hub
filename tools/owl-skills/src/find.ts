@@ -267,8 +267,8 @@ export async function runFind(args: string[]): Promise<void> {
   const query = args.join(" ");
   const isNonInteractive = !process.stdin.isTTY;
   const agentTip = `${DIM}Tip: if running in a coding agent, follow these steps:${RESET}
-${DIM}  1) npx owl find [query]${RESET}
-${DIM}  2) npx owl add <owner/repo@skill>${RESET}`;
+${DIM}  1) npx dt-skills find [query]${RESET}
+${DIM}  2) npx dt-skills add <owner/repo@skill>${RESET}`;
 
   // Non-interactive mode: just print results and exit
   if (query) {
@@ -286,7 +286,7 @@ ${DIM}  2) npx owl add <owner/repo@skill>${RESET}`;
       return;
     }
 
-    console.log(`${DIM}Install with${RESET} npx owl add <owner/repo@skill>`);
+    console.log(`${DIM}Install with${RESET} npx dt-skills add <owner/repo@skill>`);
     console.log();
 
     for (const skill of results.slice(0, 6)) {

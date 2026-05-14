@@ -77,36 +77,36 @@ function showBanner(): void {
   console.log(`${DIM}The open agent skills ecosystem${RESET}`);
   console.log();
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl add ${DIM}<package>${RESET}           ${DIM}Add a new skill${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills add ${DIM}<package>${RESET}           ${DIM}Add a new skill${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl upload${RESET}                  ${DIM}Upload a skill to the hub${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills upload${RESET}                  ${DIM}Upload a skill to the hub${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl remove${RESET}                  ${DIM}Remove installed skills${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills remove${RESET}                  ${DIM}Remove installed skills${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl list${RESET}                    ${DIM}List installed skills${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills list${RESET}                    ${DIM}List installed skills${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl find ${DIM}[query]${RESET}          ${DIM}Search for skills${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills find ${DIM}[query]${RESET}          ${DIM}Search for skills${RESET}`,
   );
   console.log();
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl update${RESET}                  ${DIM}Update installed skills${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills update${RESET}                  ${DIM}Update installed skills${RESET}`,
   );
   console.log();
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl experimental_install${RESET}    ${DIM}Restore from skills-lock.json${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills experimental_install${RESET}    ${DIM}Restore from skills-lock.json${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl init ${DIM}[name]${RESET}         ${DIM}Create a new skill${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills init ${DIM}[name]${RESET}         ${DIM}Create a new skill${RESET}`,
   );
   console.log(
-    `  ${DIM}$${RESET} ${TEXT}owl experimental_sync${RESET}       ${DIM}Sync skills from node_modules${RESET}`,
+    `  ${DIM}$${RESET} ${TEXT}dt-skills experimental_sync${RESET}       ${DIM}Sync skills from node_modules${RESET}`,
   );
   console.log();
-  console.log(`${DIM}try:${RESET} owl add hello`);
+  console.log(`${DIM}try:${RESET} dt-skills add hello`);
   console.log();
   console.log(`Discover more skills at ${TEXT}https://skills.sh/${RESET}`);
   console.log();
@@ -114,7 +114,7 @@ function showBanner(): void {
 
 function showHelp(): void {
   console.log(`
-${BOLD}Usage:${RESET} owl <command> [options]
+${BOLD}Usage:${RESET} dt-skills <command> [options]
 
 ${BOLD}Manage Skills:${RESET}
   add <package>        Add a skill package (alias: a)
@@ -168,28 +168,28 @@ ${BOLD}Options:${RESET}
   --version, -v     Show version number
 
 ${BOLD}Examples:${RESET}
-  ${DIM}$${RESET} owl add hello
-  ${DIM}$${RESET} owl add hello
-  ${DIM}$${RESET} owl add hello -g
-  ${DIM}$${RESET} owl add hello --agent claude-code cursor
-  ${DIM}$${RESET} owl add hello --skill pr-review commit
-  ${DIM}$${RESET} owl upload                        ${DIM}# upload skill from cwd${RESET}
-  ${DIM}$${RESET} owl remove                        ${DIM}# interactive remove${RESET}
-  ${DIM}$${RESET} owl remove web-design             ${DIM}# remove by name${RESET}
-  ${DIM}$${RESET} owl rm --global frontend-design
-  ${DIM}$${RESET} owl list                          ${DIM}# list project skills${RESET}
-  ${DIM}$${RESET} owl ls -g                         ${DIM}# list global skills${RESET}
-  ${DIM}$${RESET} owl ls -a claude-code             ${DIM}# filter by agent${RESET}
-  ${DIM}$${RESET} owl ls --json                      ${DIM}# JSON output${RESET}
-  ${DIM}$${RESET} owl find                          ${DIM}# interactive search${RESET}
-  ${DIM}$${RESET} owl find typescript               ${DIM}# search by keyword${RESET}
-  ${DIM}$${RESET} owl update
-  ${DIM}$${RESET} owl update my-skill             ${DIM}# update a single skill${RESET}
-  ${DIM}$${RESET} owl update -g                    ${DIM}# update global skills only${RESET}
-  ${DIM}$${RESET} owl experimental_install            ${DIM}# restore from skills-lock.json${RESET}
-  ${DIM}$${RESET} owl init my-skill
-  ${DIM}$${RESET} owl experimental_sync              ${DIM}# sync from node_modules${RESET}
-  ${DIM}$${RESET} owl experimental_sync -y           ${DIM}# sync without prompts${RESET}
+  ${DIM}$${RESET} dt-skills add hello
+  ${DIM}$${RESET} dt-skills add hello
+  ${DIM}$${RESET} dt-skills add hello -g
+  ${DIM}$${RESET} dt-skills add hello --agent claude-code cursor
+  ${DIM}$${RESET} dt-skills add hello --skill pr-review commit
+  ${DIM}$${RESET} dt-skills upload                        ${DIM}# upload skill from cwd${RESET}
+  ${DIM}$${RESET} dt-skills remove                        ${DIM}# interactive remove${RESET}
+  ${DIM}$${RESET} dt-skills remove web-design             ${DIM}# remove by name${RESET}
+  ${DIM}$${RESET} dt-skills rm --global frontend-design
+  ${DIM}$${RESET} dt-skills list                          ${DIM}# list project skills${RESET}
+  ${DIM}$${RESET} dt-skills ls -g                         ${DIM}# list global skills${RESET}
+  ${DIM}$${RESET} dt-skills ls -a claude-code             ${DIM}# filter by agent${RESET}
+  ${DIM}$${RESET} dt-skills ls --json                      ${DIM}# JSON output${RESET}
+  ${DIM}$${RESET} dt-skills find                          ${DIM}# interactive search${RESET}
+  ${DIM}$${RESET} dt-skills find typescript               ${DIM}# search by keyword${RESET}
+  ${DIM}$${RESET} dt-skills update
+  ${DIM}$${RESET} dt-skills update my-skill             ${DIM}# update a single skill${RESET}
+  ${DIM}$${RESET} dt-skills update -g                    ${DIM}# update global skills only${RESET}
+  ${DIM}$${RESET} dt-skills experimental_install            ${DIM}# restore from skills-lock.json${RESET}
+  ${DIM}$${RESET} dt-skills init my-skill
+  ${DIM}$${RESET} dt-skills experimental_sync              ${DIM}# sync from node_modules${RESET}
+  ${DIM}$${RESET} dt-skills experimental_sync -y           ${DIM}# sync without prompts${RESET}
 
 Discover more skills at ${TEXT}https://skills.sh/${RESET}
 `);
@@ -197,7 +197,7 @@ Discover more skills at ${TEXT}https://skills.sh/${RESET}
 
 function showRemoveHelp(): void {
   console.log(`
-${BOLD}Usage:${RESET} owl remove [skills...] [options]
+${BOLD}Usage:${RESET} dt-skills remove [skills...] [options]
 
 ${BOLD}Description:${RESET}
   Remove installed skills from agents. If no skill names are provided,
@@ -214,13 +214,13 @@ ${BOLD}Options:${RESET}
   --all              Shorthand for --skill '*' --agent '*' -y
 
 ${BOLD}Examples:${RESET}
-  ${DIM}$${RESET} owl remove                           ${DIM}# interactive selection${RESET}
-  ${DIM}$${RESET} owl remove my-skill                   ${DIM}# remove specific skill${RESET}
-  ${DIM}$${RESET} owl remove skill1 skill2 -y           ${DIM}# remove multiple skills${RESET}
-  ${DIM}$${RESET} owl remove --global my-skill          ${DIM}# remove from global scope${RESET}
-  ${DIM}$${RESET} owl rm --agent claude-code my-skill   ${DIM}# remove from specific agent${RESET}
-  ${DIM}$${RESET} owl remove --all                      ${DIM}# remove all skills${RESET}
-  ${DIM}$${RESET} owl remove --skill '*' -a cursor      ${DIM}# remove all skills from cursor${RESET}
+  ${DIM}$${RESET} dt-skills remove                           ${DIM}# interactive selection${RESET}
+  ${DIM}$${RESET} dt-skills remove my-skill                   ${DIM}# remove specific skill${RESET}
+  ${DIM}$${RESET} dt-skills remove skill1 skill2 -y           ${DIM}# remove multiple skills${RESET}
+  ${DIM}$${RESET} dt-skills remove --global my-skill          ${DIM}# remove from global scope${RESET}
+  ${DIM}$${RESET} dt-skills rm --agent claude-code my-skill   ${DIM}# remove from specific agent${RESET}
+  ${DIM}$${RESET} dt-skills remove --all                      ${DIM}# remove all skills${RESET}
+  ${DIM}$${RESET} dt-skills remove --skill '*' -a cursor      ${DIM}# remove all skills from cursor${RESET}
 
 Discover more skills at ${TEXT}https://skills.sh/${RESET}
 `);
@@ -279,10 +279,10 @@ Describe when this skill should be used.
   console.log();
   console.log(`${DIM}Publishing:${RESET}`);
   console.log(
-    `  ${DIM}GitHub:${RESET}  Push to a repo, then ${TEXT}owl add <owner>/<repo>${RESET}`,
+    `  ${DIM}GitHub:${RESET}  Push to a repo, then ${TEXT}dt-skills add <owner>/<repo>${RESET}`,
   );
   console.log(
-    `  ${DIM}URL:${RESET}     Host the file, then ${TEXT}owl add https://example.com/${displayPath}${RESET}`,
+    `  ${DIM}URL:${RESET}     Host the file, then ${TEXT}dt-skills add https://example.com/${displayPath}${RESET}`,
   );
   console.log();
   console.log(`Browse existing skills for inspiration at ${TEXT}https://skills.sh/${RESET}`);
@@ -566,7 +566,7 @@ function printSkippedSkills(skipped: SkippedSkill[]): void {
       const names = skills.map((s) => sanitizeMetadata(s.name)).join(", ");
       console.log(`  ${TEXT}•${RESET} ${names} ${DIM}(${reason})${RESET}`);
     }
-    console.log(`    ${DIM}To update: ${TEXT}owl add ${source} -g -y${RESET}`);
+    console.log(`    ${DIM}To update: ${TEXT}dt-skills add ${source} -g -y${RESET}`);
   }
 }
 
@@ -607,7 +607,7 @@ async function updateGlobalSkills(
   if (skillNames.length === 0) {
     if (!skillFilter) {
       console.log(`${DIM}No global skills tracked in lock file.${RESET}`);
-      console.log(`${DIM}Install skills with${RESET} ${TEXT}owl add <package> -g${RESET}`);
+      console.log(`${DIM}Install skills with${RESET} ${TEXT}dt-skills add <package> -g${RESET}`);
     }
     return { successCount, failCount, checkedCount: 0 };
   }
@@ -730,7 +730,9 @@ async function updateProjectSkills(
   if (projectSkills.length === 0) {
     if (!skillFilter) {
       console.log(`${DIM}No project skills to update.${RESET}`);
-      console.log(`${DIM}Install project skills with${RESET} ${TEXT}owl add <package>${RESET}`);
+      console.log(
+        `${DIM}Install project skills with${RESET} ${TEXT}dt-skills add <package>${RESET}`,
+      );
     }
     return { successCount, failCount, foundCount: 0 };
   }
@@ -1071,7 +1073,7 @@ async function main(): Promise<void> {
 
     default:
       console.log(`Unknown command: ${command}`);
-      console.log(`Run ${BOLD}owl --help${RESET} for usage.`);
+      console.log(`Run ${BOLD}dt-skills --help${RESET} for usage.`);
   }
 }
 
