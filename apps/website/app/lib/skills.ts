@@ -3,6 +3,7 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import { Octokit } from "@octokit/rest";
 import { basename, extname, join, relative, resolve } from "node:path";
 import { parseSkillMd } from "utils";
+import { prisma } from "./prisma";
 import type { CatalogItem, PackageDetail, Skill, SkillDetail } from "./types";
 
 const REPO_SKILLS_ROOT = resolve(process.cwd(), "skills");
@@ -499,30 +500,43 @@ export async function getCatalogItems(options?: {
 }
 
 export async function getSkillBySlug(slug: string): Promise<SkillDetail | null> {
-  const skills = await getSkillRecords();
-  const skill = skills.find((entry) => entry.slug === slug);
+  const skill = await prisma.skill.findUnique({
+    where: { slug },
+    include: { package: true },
+  });
+
   if (!skill) {
     return null;
   }
 
-  const relatedSkills = skills
-    .filter((entry) => entry.packageName === skill.packageName && entry.slug !== skill.slug)
-    .slice(0, 3);
+  const relatedSkills = await prisma.skill.findMany({
+    where: { packageId: skill.packageId, NOT: { id: skill.id } },
+    take: 3,
+  });
 
   return {
     slug: skill.slug,
     name: skill.name,
-    description: skill.description,
+    description: skill.description ?? "",
     category: skill.category,
     tags: skill.tags,
-    packageName: skill.packageName,
-    stars: skill.stars,
-    filePath: skill.filePath,
-    skillMd: skill.skillMd,
-    skillMdBody: skill.skillMdBody,
-    fileList: skill.fileList,
-    installCommand: `npx dt-skills add ${skill.packageName}`,
-    relatedSkills,
+    packageName: skill.package.name,
+    stars: 0,
+    filePath: "",
+    skillMd: skill.skillMdBody ?? "",
+    skillMdBody: skill.skillMdBody ?? "",
+    fileList: (skill.fileList as Array<{ path: string; language: string; size: number }> | null) ?? [],
+    installCommand: `npx dt-skills add ${skill.package.name}`,
+    relatedSkills: relatedSkills.map((related) => ({
+      slug: related.slug,
+      name: related.name,
+      description: related.description ?? "",
+      category: related.category,
+      tags: related.tags,
+      packageName: skill.package.name,
+      stars: 0,
+      filePath: "",
+    })),
   };
 }
 
@@ -553,7 +567,9 @@ export async function getPackageBySlug(slug: string): Promise<PackageDetail | nu
 }
 
 export async function getSkillSlugs(): Promise<string[]> {
-  const skills = await getSkillRecords();
+  const skills = await prisma.skill.findMany({
+    select: { slug: true },
+  });
   return skills.map((skill) => skill.slug);
 }
 
