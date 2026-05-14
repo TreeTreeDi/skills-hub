@@ -1,6 +1,7 @@
 import { SyncService } from "../app/lib/sync";
+import { prisma } from "../app/lib/prisma";
 
-const syncService = new SyncService();
+const syncService = new SyncService(prisma);
 
 async function main() {
   console.log("Start seeding...");

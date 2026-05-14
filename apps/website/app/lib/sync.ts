@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import type { PrismaClient } from "@prisma/client";
 import { getSkillRecords, type SkillRecord } from "./skills";
 
 export interface SyncResult {
@@ -14,6 +14,8 @@ export interface SyncAllResult {
 }
 
 export class SyncService {
+  constructor(private prisma: PrismaClient) {}
+
   async syncAll(): Promise<SyncAllResult> {
     const skills = await getSkillRecords();
     const errors: string[] = [];
@@ -62,7 +64,7 @@ export class SyncService {
         ? `${packageSkills.length} 个技能，包含 ${packageSkills.map((s) => s.name).join("、")}`
         : packageSkills[0]?.description;
 
-      const pkg = await prisma.package.upsert({
+      const pkg = await this.prisma.package.upsert({
         where: { slug: packageName },
         update: {
           name: packageName,
@@ -82,7 +84,7 @@ export class SyncService {
 
       for (const skill of packageSkills) {
         try {
-          await prisma.skill.upsert({
+          await this.prisma.skill.upsert({
             where: { slug: skill.slug },
             update: {
               name: skill.name,
@@ -123,7 +125,7 @@ export class SyncService {
   }
 
   async rebuildSearchVectors(): Promise<void> {
-    await prisma.$executeRawUnsafe(`
+    await this.prisma.$executeRawUnsafe(`
       UPDATE "Skill"
       SET "searchVector" = setweight(to_tsvector('simple', coalesce("name", '')), 'A') ||
                            setweight(to_tsvector('simple', coalesce("description", '')), 'B') ||
