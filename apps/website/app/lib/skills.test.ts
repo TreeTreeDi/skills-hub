@@ -1,8 +1,20 @@
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { afterEach, describe, expect, it } from "vitest";
-import { __internal, validateSkillSource } from "./skills";
+import { afterEach, describe, expect, it, vi, beforeEach } from "vitest";
+import { prisma } from "./prisma";
+import { __internal, validateSkillSource, getSkillSlugs, getSkillBySlug } from "./skills";
+
+vi.mock("./prisma", () => ({
+  prisma: {
+    skill: {
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+    },
+  },
+}));
+
+const mockedPrisma = vi.mocked(prisma);
 
 const tempDirs: string[] = [];
 
@@ -156,5 +168,90 @@ describe("validateSkillSource", () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors[0]).toContain("No valid skills found");
+  });
+});
+
+describe("getSkillSlugs", () => {
+  beforeEach(() => {
+    vi.mocked(mockedPrisma.skill.findMany).mockReset();
+  });
+
+  it("returns all skill slugs from the database", async () => {
+    vi.mocked(mockedPrisma.skill.findMany).mockResolvedValue([
+      { slug: "pkg--skill-a" },
+      { slug: "pkg--skill-b" },
+    ] as unknown as Awaited<ReturnType<typeof mockedPrisma.skill.findMany>>);
+
+    const slugs = await getSkillSlugs();
+
+    expect(slugs).toEqual(["pkg--skill-a", "pkg--skill-b"]);
+    expect(mockedPrisma.skill.findMany).toHaveBeenCalledWith({
+      select: { slug: true },
+    });
+  });
+});
+
+describe("getSkillBySlug", () => {
+  beforeEach(() => {
+    vi.mocked(mockedPrisma.skill.findUnique).mockReset();
+    vi.mocked(mockedPrisma.skill.findMany).mockReset();
+  });
+
+  it("returns null when skill is not found", async () => {
+    vi.mocked(mockedPrisma.skill.findUnique).mockResolvedValue(null);
+
+    const skill = await getSkillBySlug("nonexistent");
+
+    expect(skill).toBeNull();
+    expect(mockedPrisma.skill.findUnique).toHaveBeenCalledWith({
+      where: { slug: "nonexistent" },
+      include: { package: true },
+    });
+  });
+
+  it("returns skill detail with related skills from the same package", async () => {
+    const mockSkill = {
+      id: "skill-1",
+      slug: "pkg--skill-a",
+      name: "Skill A",
+      description: "Description A",
+      category: "集成包",
+      tags: ["tag1"],
+      packageId: "pkg-1",
+      package: { name: "pkg" },
+      fileList: [{ path: "SKILL.md", language: "markdown", size: 100 }],
+      skillMdBody: "Body A",
+    };
+
+    vi.mocked(mockedPrisma.skill.findUnique).mockResolvedValue(
+      mockSkill as unknown as Awaited<ReturnType<typeof mockedPrisma.skill.findUnique>>,
+    );
+
+    vi.mocked(mockedPrisma.skill.findMany).mockResolvedValue([
+      {
+        slug: "pkg--skill-b",
+        name: "Skill B",
+        description: "Description B",
+        category: "集成包",
+        tags: [],
+        packageName: "pkg",
+        stars: 0,
+        filePath: "skills/pkg/skill-b/SKILL.md",
+      },
+    ] as unknown as Awaited<ReturnType<typeof mockedPrisma.skill.findMany>>);
+
+    const skill = await getSkillBySlug("pkg--skill-a");
+
+    expect(skill).not.toBeNull();
+    expect(skill?.slug).toBe("pkg--skill-a");
+    expect(skill?.name).toBe("Skill A");
+    expect(skill?.packageName).toBe("pkg");
+    expect(skill?.stars).toBe(0);
+    expect(skill?.relatedSkills).toHaveLength(1);
+    expect(skill?.relatedSkills[0]?.slug).toBe("pkg--skill-b");
+    expect(mockedPrisma.skill.findMany).toHaveBeenCalledWith({
+      where: { packageId: "pkg-1", NOT: { id: "skill-1" } },
+      take: 3,
+    });
   });
 });
