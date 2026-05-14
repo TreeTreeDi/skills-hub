@@ -63,10 +63,7 @@ export default async function SkillDetailPage({ params }: PageProps) {
             <h2 className="font-body text-sm font-medium uppercase tracking-wide text-muted mb-4">
               Documentation
             </h2>
-            <MarkdownContent
-              content={skill.skillMdBody}
-              className="prose prose-sm max-w-none"
-            />
+            <MarkdownContent content={skill.skillMdBody} className="prose prose-sm max-w-none" />
           </div>
 
           {/* Sidebar */}

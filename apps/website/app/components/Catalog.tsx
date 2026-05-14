@@ -113,7 +113,12 @@ export function Catalog({ items, categories }: CatalogProps) {
       {/* Category chips */}
       <div className="flex flex-wrap gap-2 mb-8">
         {categories.map((cat) => (
-          <Chip key={cat} label={cat} active={cat === category} onClick={() => handleCategoryClick(cat)} />
+          <Chip
+            key={cat}
+            label={cat}
+            active={cat === category}
+            onClick={() => handleCategoryClick(cat)}
+          />
         ))}
       </div>
 

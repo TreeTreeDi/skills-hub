@@ -86,6 +86,27 @@ class OctokitGitHubClient implements GitHubClient {
       throw err;
     }
   }
+
+  async getDirectoryTree(path: string, branchName: string): Promise<Map<string, string>> {
+    const { data } = await this.octokit.git.getTree({
+      owner: this.owner,
+      repo: this.repo,
+      tree_sha: branchName,
+      recursive: "1",
+    });
+
+    const prefix = path.endsWith("/") ? path : path + "/";
+    const result = new Map<string, string>();
+
+    for (const entry of data.tree) {
+      if (entry.type === "blob" && entry.path && entry.sha && entry.path.startsWith(prefix)) {
+        const relativePath = entry.path.slice(prefix.length);
+        result.set(relativePath, entry.sha);
+      }
+    }
+
+    return result;
+  }
 }
 
 export function createOctokitClient(): GitHubClient {

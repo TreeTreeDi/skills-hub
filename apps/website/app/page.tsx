@@ -7,10 +7,7 @@ import { CommandBlock } from "./components/CommandBlock";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [items, categories] = await Promise.all([
-    getCatalogItems(),
-    getCategories(),
-  ]);
+  const [items, categories] = await Promise.all([getCatalogItems(), getCategories()]);
 
   return (
     <main className="min-h-screen bg-canvas">

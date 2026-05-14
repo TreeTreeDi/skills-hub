@@ -30,12 +30,18 @@ function CopyCodeButton({ text }: { text: string }) {
 
 const components = {
   h1: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h1 className="font-display text-[48px] font-normal leading-[1.2] tracking-[-0.48px] text-ink mt-8 mb-6" {...props}>
+    <h1
+      className="font-display text-[48px] font-normal leading-[1.2] tracking-[-0.48px] text-ink mt-8 mb-6"
+      {...props}
+    >
       {children}
     </h1>
   ),
   h2: ({ children, ...props }: React.HTMLAttributes<HTMLHeadingElement>) => (
-    <h2 className="font-display text-[32px] font-normal leading-[1.2] tracking-[-0.32px] text-ink mt-8 mb-4" {...props}>
+    <h2
+      className="font-display text-[32px] font-normal leading-[1.2] tracking-[-0.32px] text-ink mt-8 mb-4"
+      {...props}
+    >
       {children}
     </h2>
   ),
@@ -78,14 +84,15 @@ const components = {
       {children}
     </a>
   ),
-  code: ({ children, className, ...props }: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
+  code: ({
+    children,
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLElement> & { className?: string }) => {
     const isBlock = className?.startsWith("language-");
     if (isBlock) {
       return (
-        <code
-          className="font-mono text-sm text-ink block"
-          {...props}
-        >
+        <code className="font-mono text-sm text-ink block" {...props}>
           {children}
         </code>
       );
@@ -109,10 +116,7 @@ const components = {
     );
   },
   blockquote: ({ children, ...props }: React.HTMLAttributes<HTMLQuoteElement>) => (
-    <blockquote
-      className="border-l-2 border-coral pl-4 italic text-muted mb-4"
-      {...props}
-    >
+    <blockquote className="border-l-2 border-coral pl-4 italic text-muted mb-4" {...props}>
       {children}
     </blockquote>
   ),
@@ -132,7 +136,10 @@ const components = {
     </div>
   ),
   thead: ({ children, ...props }: React.HTMLAttributes<HTMLTableSectionElement>) => (
-    <thead className="bg-soft-stone font-mono text-xs uppercase tracking-wide text-muted" {...props}>
+    <thead
+      className="bg-soft-stone font-mono text-xs uppercase tracking-wide text-muted"
+      {...props}
+    >
       {children}
     </thead>
   ),
@@ -162,7 +169,13 @@ function extractText(node: React.ReactNode): string {
   if (typeof node === "string") return node;
   if (typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(extractText).join("");
-  if (node && typeof node === "object" && "props" in node && node.props && typeof node.props === "object") {
+  if (
+    node &&
+    typeof node === "object" &&
+    "props" in node &&
+    node.props &&
+    typeof node.props === "object"
+  ) {
     return extractText((node.props as { children?: React.ReactNode }).children);
   }
   return "";
@@ -171,7 +184,9 @@ function extractText(node: React.ReactNode): string {
 export function MarkdownContent({ content, className }: MarkdownContentProps) {
   return (
     <article className={className}>
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>{content}</ReactMarkdown>
+      <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+        {content}
+      </ReactMarkdown>
     </article>
   );
 }

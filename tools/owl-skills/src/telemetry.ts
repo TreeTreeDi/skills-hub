@@ -53,13 +53,19 @@ interface UploadTelemetryData {
   success: string;
 }
 
+interface AmendTelemetryData {
+  event: "amend";
+  success: string;
+}
+
 type TelemetryData =
   | InstallTelemetryData
   | RemoveTelemetryData
   | UpdateTelemetryData
   | FindTelemetryData
   | SyncTelemetryData
-  | UploadTelemetryData;
+  | UploadTelemetryData
+  | AmendTelemetryData;
 
 let cliVersion: string | null = null;
 

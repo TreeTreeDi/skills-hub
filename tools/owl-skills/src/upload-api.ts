@@ -12,7 +12,17 @@ export interface UploadApiResult {
   error?: string;
 }
 
-export interface UploadApiOptions {
+export interface AmendApiResult {
+  success: boolean;
+  prUrl?: string;
+  skills?: Array<{ name: string; description: string }>;
+  addedPaths?: string[];
+  modifiedPaths?: string[];
+  noChanges?: boolean;
+  error?: string;
+}
+
+export interface SubmitApiOptions {
   uploaderName?: string;
   uploaderEmail?: string;
   packageName?: string;
@@ -39,6 +49,8 @@ export async function checkPackageExists(
   }
 }
 
+type SubmitMode = "upload" | "amend";
+
 export async function createZip(dirPath: string): Promise<string> {
   const resolved = resolve(dirPath);
   const zipPath = join(tmpdir(), `owl-upload-${Date.now()}.zip`);
@@ -48,10 +60,19 @@ export async function createZip(dirPath: string): Promise<string> {
   return zipPath;
 }
 
-export async function uploadToHub(
+async function submitToHub(
+  mode: SubmitMode,
   dirPath: string,
-  options: UploadApiOptions = {},
-): Promise<UploadApiResult> {
+  options: SubmitApiOptions = {},
+): Promise<{
+  success: boolean;
+  prUrl?: string;
+  skills?: Array<{ name: string; description: string }>;
+  addedPaths?: string[];
+  modifiedPaths?: string[];
+  noChanges?: boolean;
+  error?: string;
+}> {
   const validation = await validateUploadDir(dirPath);
   if (!validation.valid) {
     return { success: false, error: validation.error };
@@ -60,7 +81,7 @@ export async function uploadToHub(
   const zipPath = await createZip(dirPath);
   const zipBuffer = await readFile(zipPath);
 
-  const apiUrl = apiConfig.uploadUrl;
+  const apiUrl = mode === "amend" ? apiConfig.amendUrl : apiConfig.uploadUrl;
   const formData = new FormData();
   formData.append("file", new File([zipBuffer], "package.zip"), "package.zip");
   formData.append("packageName", options.packageName ?? validation.packageName);
@@ -71,7 +92,8 @@ export async function uploadToHub(
     const response = await fetch(apiUrl, { method: "POST", body: formData });
     if (!response.ok) {
       const body = await response.text();
-      if (response.status === 409) {
+      const expectedStatus = mode === "upload" ? 409 : 404;
+      if (response.status === expectedStatus) {
         try {
           const parsed = JSON.parse(body) as { error?: string };
           if (parsed.error) {
@@ -84,16 +106,45 @@ export async function uploadToHub(
       return { success: false, error: `API error (${response.status}): ${body}` };
     }
     const data = (await response.json()) as {
-      prUrl: string;
-      skills: Array<{ name: string; description: string }>;
+      prUrl?: string;
+      skills?: Array<{ name: string; description: string }>;
+      addedPaths?: string[];
+      modifiedPaths?: string[];
+      noChanges?: boolean;
+      message?: string;
     };
-    return { success: true, prUrl: data.prUrl, skills: data.skills };
+
+    if (data.noChanges) {
+      return { success: true, noChanges: true, error: data.message };
+    }
+
+    return {
+      success: true,
+      prUrl: data.prUrl,
+      skills: data.skills,
+      addedPaths: data.addedPaths,
+      modifiedPaths: data.modifiedPaths,
+    };
   } catch (error) {
     return {
       success: false,
       error: error instanceof Error ? error.message : "Network error",
     };
   }
+}
+
+export async function uploadToHub(
+  dirPath: string,
+  options: SubmitApiOptions = {},
+): Promise<UploadApiResult> {
+  return submitToHub("upload", dirPath, options);
+}
+
+export async function amendToHub(
+  dirPath: string,
+  options: SubmitApiOptions = {},
+): Promise<AmendApiResult> {
+  return submitToHub("amend", dirPath, options);
 }
 
 function execPromise(

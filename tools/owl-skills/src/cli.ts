@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 import { spawnSync, execSync } from "child_process";
 import { writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } from "fs";
 import { basename, join, dirname } from "path";
@@ -23,7 +26,7 @@ import {
   formatSourceInput,
 } from "./update-source.ts";
 import { validateUploadDir } from "./upload.ts";
-import { uploadToHub, checkPackageExists } from "./upload-api.ts";
+import { uploadToHub, amendToHub, type AmendApiResult, checkPackageExists } from "./upload-api.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -83,6 +86,9 @@ function showBanner(): void {
     `  ${DIM}$${RESET} ${TEXT}owl upload${RESET}                  ${DIM}Upload a skill to the hub${RESET}`,
   );
   console.log(
+    `  ${DIM}$${RESET} ${TEXT}owl amend${RESET}                   ${DIM}Update an existing skill package${RESET}`,
+  );
+  console.log(
     `  ${DIM}$${RESET} ${TEXT}owl remove${RESET}                  ${DIM}Remove installed skills${RESET}`,
   );
   console.log(
@@ -120,6 +126,7 @@ ${BOLD}Manage Skills:${RESET}
   add <package>        Add a skill package (alias: a)
                        e.g. hello, owner/repo, or a GitHub URL
   upload [dir]         Upload a skill to the hub
+  amend [dir]          Update an existing skill package
   remove [skills]      Remove installed skills
   list, ls             List installed skills
   find [query]         Search for skills interactively
@@ -174,6 +181,7 @@ ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} owl add hello --agent claude-code cursor
   ${DIM}$${RESET} owl add hello --skill pr-review commit
   ${DIM}$${RESET} owl upload                        ${DIM}# upload skill from cwd${RESET}
+  ${DIM}$${RESET} owl amend                         ${DIM}# update existing package from cwd${RESET}
   ${DIM}$${RESET} owl remove                        ${DIM}# interactive remove${RESET}
   ${DIM}$${RESET} owl remove web-design             ${DIM}# remove by name${RESET}
   ${DIM}$${RESET} owl rm --global frontend-design
@@ -844,7 +852,7 @@ async function runUpdate(args: string[] = []): Promise<void> {
 }
 
 // ============================================
-// Upload Command
+// Upload / Amend Command
 // ============================================
 
 function getGitConfig(): { name: string; email: string } | null {
@@ -856,7 +864,45 @@ function getGitConfig(): { name: string; email: string } | null {
   return null;
 }
 
-async function runUpload(args: string[]): Promise<void> {
+type SubmitMode = "upload" | "amend";
+
+interface SubmitConfig {
+  mode: SubmitMode;
+  verb: string;
+  confirmLabel: string;
+  spinnerStart: string;
+  spinnerSuccess: string;
+  spinnerFail: string;
+  abortLabel: string;
+  cancelLabel: string;
+}
+
+const SUBMIT_CONFIGS: Record<SubmitMode, SubmitConfig> = {
+  upload: {
+    mode: "upload",
+    verb: "Upload",
+    confirmLabel: "Upload",
+    spinnerStart: "Uploading to hub...",
+    spinnerSuccess: "Upload complete!",
+    spinnerFail: "Upload failed",
+    abortLabel: "Upload aborted",
+    cancelLabel: "Upload cancelled",
+  },
+  amend: {
+    mode: "amend",
+    verb: "Amend",
+    confirmLabel: "Amend",
+    spinnerStart: "Checking for changes...",
+    spinnerSuccess: "Amend complete!",
+    spinnerFail: "Amend failed",
+    abortLabel: "Amend aborted",
+    cancelLabel: "Amend cancelled",
+  },
+};
+
+async function runSubmit(args: string[], mode: SubmitMode): Promise<void> {
+  const config = SUBMIT_CONFIGS[mode];
+
   let dirPath = process.cwd();
 
   for (let i = 0; i < args.length; i++) {
@@ -873,7 +919,7 @@ async function runUpload(args: string[]): Promise<void> {
 
   if (!validation.valid) {
     spinner.stop(`Validation failed: ${validation.error}`);
-    p.outro(pc.red("Upload aborted"));
+    p.outro(pc.red(config.abortLabel));
     return;
   }
 
@@ -883,104 +929,131 @@ async function runUpload(args: string[]): Promise<void> {
 
   let packageName = validation.packageName;
 
-  // Pre-flight check: does the package already exist?
-  const checkSpinner = p.spinner();
-  checkSpinner.start("Checking package name availability...");
-  const check = await checkPackageExists(packageName);
-  if (check.error) {
-    checkSpinner.stop(`Availability check failed: ${check.error}`);
-    p.outro(pc.red("Upload aborted"));
-    return;
-  }
-  checkSpinner.stop("Availability check complete");
-
-  if (check.exists) {
-    console.log();
-    console.log(pc.yellow(`Package "${packageName}" already exists.`));
-
-    const action = await p.select({
-      message: "What would you like to do?",
-      options: [
-        { value: "rename", label: "Rename and create new" },
-        { value: "cancel", label: "Cancel" },
-      ],
-    });
-
-    if (p.isCancel(action) || action === "cancel") {
-      p.cancel("Upload cancelled");
-      process.exit(0);
-    }
-
-    const newName = await p.text({
-      message: "Enter a new package name:",
-      validate: (value) => {
-        if (!value || value.trim().length === 0) return "Package name is required";
-        if (value.trim().includes(" ")) return "Spaces are not allowed";
-      },
-    });
-
-    if (p.isCancel(newName)) {
-      p.cancel("Upload cancelled");
-      process.exit(0);
-    }
-
-    packageName = (newName as string).trim();
-
-    // Re-check availability of the new name
-    const recheck = await checkPackageExists(packageName);
-    if (recheck.error) {
-      console.log(pc.red(`Error checking new name: ${recheck.error}`));
-      p.outro(pc.red("Upload aborted"));
+  // Pre-flight check only for upload mode
+  if (mode === "upload") {
+    const checkSpinner = p.spinner();
+    checkSpinner.start("Checking package name availability...");
+    const check = await checkPackageExists(packageName);
+    if (check.error) {
+      checkSpinner.stop(`Availability check failed: ${check.error}`);
+      p.outro(pc.red(config.abortLabel));
       return;
     }
-    if (recheck.exists) {
-      console.log(pc.red(`Package "${packageName}" also already exists.`));
-      p.outro(pc.red("Upload aborted"));
-      return;
+    checkSpinner.stop("Availability check complete");
+
+    if (check.exists) {
+      console.log();
+      console.log(pc.yellow(`Package "${packageName}" already exists.`));
+
+      const action = await p.select({
+        message: "What would you like to do?",
+        options: [
+          { value: "rename", label: "Rename and create new" },
+          { value: "cancel", label: "Cancel" },
+        ],
+      });
+
+      if (p.isCancel(action) || action === "cancel") {
+        p.cancel(config.cancelLabel);
+        process.exit(0);
+      }
+
+      const newName = await p.text({
+        message: "Enter a new package name:",
+        validate: (value) => {
+          if (!value || value.trim().length === 0) return "Package name is required";
+          if (value.trim().includes(" ")) return "Spaces are not allowed";
+        },
+      });
+
+      if (p.isCancel(newName)) {
+        p.cancel(config.cancelLabel);
+        process.exit(0);
+      }
+
+      packageName = (newName as string).trim();
+
+      // Re-check availability of the new name
+      const recheck = await checkPackageExists(packageName);
+      if (recheck.error) {
+        console.log(pc.red(`Error checking new name: ${recheck.error}`));
+        p.outro(pc.red(config.abortLabel));
+        return;
+      }
+      if (recheck.exists) {
+        console.log(pc.red(`Package "${packageName}" also already exists.`));
+        p.outro(pc.red(config.abortLabel));
+        return;
+      }
     }
   }
 
-  const confirmUpload = await p.confirm({
-    message: `Upload "${packageName}" to the Skills Hub?`,
+  const confirmSubmit = await p.confirm({
+    message: `${config.confirmLabel} "${packageName}" on the Skills Hub?`,
   });
 
-  if (p.isCancel(confirmUpload) || !confirmUpload) {
-    p.cancel("Upload cancelled");
+  if (p.isCancel(confirmSubmit) || !confirmSubmit) {
+    p.cancel(config.cancelLabel);
     process.exit(0);
   }
 
   const gitConfig = getGitConfig();
 
-  const uploadSpinner = p.spinner();
-  uploadSpinner.start("Uploading to hub...");
+  const submitSpinner = p.spinner();
+  submitSpinner.start(config.spinnerStart);
 
-  const result = await uploadToHub(dirPath, {
-    uploaderName: gitConfig?.name,
-    uploaderEmail: gitConfig?.email,
-    packageName,
-  });
+  const result =
+    mode === "amend"
+      ? await amendToHub(dirPath, {
+          uploaderName: gitConfig?.name,
+          uploaderEmail: gitConfig?.email,
+        })
+      : await uploadToHub(dirPath, {
+          uploaderName: gitConfig?.name,
+          uploaderEmail: gitConfig?.email,
+          packageName,
+        });
 
   if (result.success) {
-    uploadSpinner.stop("Upload complete!");
-    console.log();
-    if (result.prUrl) {
-      console.log(`${TEXT}Pull request created:${RESET} ${pc.cyan(result.prUrl)}`);
-    }
-    if (result.skills) {
-      console.log(`${DIM}Skills:${RESET}`);
-      for (const skill of result.skills) {
-        console.log(`  ${TEXT}•${RESET} ${skill.name}: ${skill.description}`);
+    const amendResult = mode === "amend" ? (result as AmendApiResult) : null;
+    if (amendResult && amendResult.noChanges) {
+      submitSpinner.stop("No changes detected");
+      console.log();
+      console.log(`${TEXT}The package is already up to date.${RESET}`);
+    } else {
+      submitSpinner.stop(config.spinnerSuccess);
+      console.log();
+      if (result.prUrl) {
+        console.log(`${TEXT}Pull request created:${RESET} ${pc.cyan(result.prUrl)}`);
+      }
+      if (amendResult && amendResult.addedPaths && amendResult.addedPaths.length > 0) {
+        console.log(`${DIM}Added files:${RESET}`);
+        for (const path of amendResult.addedPaths) {
+          console.log(`  ${pc.green("+")} ${path}`);
+        }
+      }
+      if (amendResult && amendResult.modifiedPaths && amendResult.modifiedPaths.length > 0) {
+        console.log(`${DIM}Modified files:${RESET}`);
+        for (const path of amendResult.modifiedPaths) {
+          console.log(`  ${pc.yellow("~")} ${path}`);
+        }
+      }
+      if (result.skills) {
+        console.log(`${DIM}Skills:${RESET}`);
+        for (const skill of result.skills) {
+          console.log(`  ${TEXT}*${RESET} ${skill.name}: ${skill.description}`);
+        }
       }
     }
   } else {
-    uploadSpinner.stop("Upload failed");
+    submitSpinner.stop(config.spinnerFail);
     console.log();
     console.log(`${pc.red("Error:")} ${result.error}`);
   }
 
   console.log();
   track({
-    event: "upload",
+    event: mode,
     success: String(result.success),
   });
 }
@@ -1048,7 +1121,13 @@ async function main(): Promise<void> {
     case "upload": {
       showLogo();
       console.log();
-      await runUpload(restArgs);
+      await runSubmit(restArgs, "upload");
+      break;
+    }
+    case "amend": {
+      showLogo();
+      console.log();
+      await runSubmit(restArgs, "amend");
       break;
     }
     case "list":

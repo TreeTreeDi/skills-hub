@@ -36,6 +36,10 @@ export const apiConfig = {
     return `${resolveUploadBaseUrl()}/api/upload`;
   },
 
+  get amendUrl() {
+    return `${resolveUploadBaseUrl()}/api/amend`;
+  },
+
   get checkPackageUrl() {
     return `${resolveUploadBaseUrl()}/api/upload/check`;
   },
